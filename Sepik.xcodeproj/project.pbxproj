@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C3CF40E62DFA5E1600BCCD01 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C3CF40E52DFA5E1100BCCD01 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C3CF40D62DFA5D7F00BCCD01 /* Sepik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sepik.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3CF40E52DFA5E1100BCCD01 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -32,6 +37,7 @@
 		C3CF40CD2DFA5D7F00BCCD01 = {
 			isa = PBXGroup;
 			children = (
+				C3CF40E52DFA5E1100BCCD01 /* README.md */,
 				C3CF40D82DFA5D7F00BCCD01 /* Sepik */,
 				C3CF40D72DFA5D7F00BCCD01 /* Products */,
 			);
@@ -109,6 +115,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3CF40E62DFA5E1600BCCD01 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
