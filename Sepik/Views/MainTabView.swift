@@ -8,43 +8,51 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab = 0
+    @Binding var selectedTab: Int
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            PracticeView()
-                .tabItem {
-                    tabItemView(title: "Analysis", imageName: "analysis", tag: 0)
-                }
-                .tag(0)
+        HStack {
+            Spacer()
             
-            HistoryView()
-                .tabItem {
-                    tabItemView(title: "History", imageName: "history", tag: 1)
+            // Analysis Tab
+            Button(action: {
+                selectedTab = 0
+            }) {
+                VStack(spacing: 4) {
+                    Image(systemName: "doc.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(selectedTab == 0 ? Color("AccentSecondary") : .gray)
+                    Text("Analysis")
+                        .font(.caption)
+                        .foregroundColor(selectedTab == 0 ? Color("AccentSecondary") : .gray)
                 }
-                .tag(1)
+            }
+            
+            Spacer()
+            
+            // History Tab
+            Button(action: {
+                selectedTab = 1
+            }) {
+                VStack(spacing: 4) {
+                    Image(systemName: "clock.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(selectedTab == 1 ? Color("AccentSecondary") : .gray)
+                    Text("History")
+                        .font(.caption)
+                        .foregroundColor(selectedTab == 1 ? Color("AccentSecondary") : .gray)
+                }
+            }
+            
+            Spacer()
         }
+        .padding(.vertical, 12)
         .background(Color.white)
-        .tint(Color.orange)
-//        .ignoresSafeArea(edges: .bottom)
-    }
-    
-    @ViewBuilder
-    func tabItemView(title: String, imageName: String, tag: Int) -> some View {
-        VStack {
-            Image(imageName)
-                .resizable()
-                .renderingMode(.template)
-                .frame(width: 30, height: 30)
-                .foregroundColor(selectedTab == tag ? .orange : .gray)
-            Text(title)
-                .font(.caption)
-                .foregroundColor(selectedTab == tag ? .orange : .gray)
-        }
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: -2)
     }
 }
 
 #Preview {
-    MainTabView()
+    MainTabView(selectedTab: .constant(0))
 }
 

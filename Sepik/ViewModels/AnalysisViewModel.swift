@@ -1,6 +1,8 @@
 import Foundation
 import AVFoundation
+import SwiftData
 
+@MainActor
 class AnalysisViewModel: ObservableObject {
     @Published var isProcessing = false
     @Published var result: AnalysisResult?
@@ -9,8 +11,9 @@ class AnalysisViewModel: ObservableObject {
     private let videoURL: URL
     private let facialAnalyzer: FacialExpressionAnalyzer
     private let speechAnalyzer: SpeechAnalyzer
+    var dataManager: DataManager?
 
-    init(videoURL: URL) {
+    init(videoURL: URL, modelContext: ModelContext? = nil) {
         self.videoURL = videoURL
         do {
             facialAnalyzer = try FacialExpressionAnalyzer()
@@ -18,9 +21,12 @@ class AnalysisViewModel: ObservableObject {
             fatalError("Failed to load CoreML model: \(error)")
         }
         speechAnalyzer = SpeechAnalyzer()
+        
+        if let modelContext = modelContext {
+            self.dataManager = DataManager(modelContext: modelContext)
+        }
     }
 
-    @MainActor
     func analyze() async {
         isProcessing = true
         do {
@@ -48,6 +54,10 @@ class AnalysisViewModel: ObservableObject {
                 fillerCounts: fillerCounts
             )
             result = analysis
+            
+            // Save to SwiftData
+            dataManager?.savePracticeSession(analysis)
+            
         } catch {
             errorMessage = (error as NSError).localizedDescription
         }

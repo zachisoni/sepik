@@ -74,7 +74,7 @@ struct OnboardingView: View {
                 }
 
                 if viewModel.currentPage == viewModel.pages.count - 1 {
-                    NavigationLink(destination: HomeView()) {
+                    NavigationLink(destination: InputNameView()) {
                         Text("Get Started!")
                             .frame(maxWidth: .infinity)
                             .padding()

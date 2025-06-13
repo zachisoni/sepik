@@ -1,5 +1,5 @@
 //
-//  PracticeVideoUrl.swift
+//  Video.swift
 //  Sepik
 //
 //  Created by Yonathan Handoyo on 12/06/25.
@@ -22,4 +22,4 @@ struct Video: Transferable {
             return Self(url: tempURL)
         }
     }
-}
+} 

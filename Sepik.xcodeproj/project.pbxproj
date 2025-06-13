@@ -263,6 +263,10 @@
 				DEVELOPMENT_TEAM = 74859D4FR4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Sepik needs access to your camera to record videos for speech analysis.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sepik needs access to your microphone to analyze your speech patterns and provide feedback on your speaking performance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Sepik needs access to your photo library to let you select videos for speech analysis.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Sepik uses speech recognition to analyze your speech for filler words and speaking pace to help improve your presentation skills.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -291,6 +295,10 @@
 				DEVELOPMENT_TEAM = 74859D4FR4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Sepik needs access to your camera to record videos for speech analysis.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sepik needs access to your microphone to analyze your speech patterns and provide feedback on your speaking performance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Sepik needs access to your photo library to let you select videos for speech analysis.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Sepik uses speech recognition to analyze your speech for filler words and speaking pace to help improve your presentation skills.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

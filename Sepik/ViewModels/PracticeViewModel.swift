@@ -18,6 +18,10 @@ class PracticeViewModel: ObservableObject {
     @Published var selectedItem: PhotosPickerItem? = nil
     @Published var isPickerPresented = false
 
+    var canProceed: Bool {
+        isVideoUploaded && !isLoading
+    }
+
     func onSelectedItemChanged(oldValue: PhotosPickerItem?, newValue: PhotosPickerItem?) {
         guard let result = newValue else {
             errorMessage = "No video selected."
@@ -61,15 +65,6 @@ class PracticeViewModel: ObservableObject {
 
             isLoading = false
         }
-    }
-
-    func startAnalysis() {
-        guard let videoURL = selectedVideo else {
-            errorMessage = "No video available for analysis."
-            return
-        }
-        print("Starting analysis with: \(videoURL.lastPathComponent)")
-        cleanupTemporaryFile()
     }
 
     private func cleanupTemporaryFile() {

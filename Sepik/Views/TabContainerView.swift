@@ -1,16 +1,45 @@
 //
-//  PracticeView.swift
+//  TabContainerView.swift
 //  Sepik
 //
 //  Created by Yonathan Handoyo on 12/06/25.
 //
 
 import SwiftUI
+import SwiftData
 import PhotosUI
 import AVKit
 
-struct PracticeView: View {
+struct TabContainerView: View {
+    @State private var selectedTab = 0
+    @Environment(\.modelContext) private var modelContext
+    
+    var body: some View {
+        ZStack {
+            // Content based on selected tab
+            Group {
+                if selectedTab == 0 {
+                    PracticeContentView()
+                        .environment(\.modelContext, modelContext)
+                } else {
+                    HistoryView()
+                        .environment(\.modelContext, modelContext)
+                }
+            }
+            
+            // Tab bar overlay
+            VStack {
+                Spacer()
+                MainTabView(selectedTab: $selectedTab)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+}
+
+struct PracticeContentView: View {
     @StateObject private var viewModel = PracticeViewModel()
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         ZStack {
@@ -19,21 +48,6 @@ struct PracticeView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Back Button
-                    HStack {
-                        NavigationLink(destination: InputNameView()) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 16, weight: .medium))
-                                Text("Back")
-                                    .font(.system(size: 16))
-                            }
-                            .foregroundColor(Color("AccentPrimary"))
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    
                     Text("Recording Requirements")
                         .font(.title2)
                         .fontWeight(.semibold)
@@ -94,6 +108,7 @@ struct PracticeView: View {
                     }
                 }
                 .padding(.vertical)
+                .padding(.bottom, 100) // Add space for tab bar
             }
         }
         .photosPicker(
@@ -122,8 +137,6 @@ struct PracticeView: View {
         )) { error in
             Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .onAppear {
             do {
                 try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
@@ -135,78 +148,9 @@ struct PracticeView: View {
     }
 }
 
-struct DashedUploadBox: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 8){
-                Image(systemName: "video")
-                    .font(.system(size: 20))
-                    .foregroundColor(.white)
-                Text("Choose Files")
-                    .font(.title3)
-                    .bold()
-                    .foregroundColor(.white)
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 32)
-            .background(Color("AccentPrimary"))
-            .cornerRadius(8)
-
-            Text("Supported format: .MOV (Max size 5 gb)")
-                .font(.caption)
-                .foregroundColor(.gray)
-        }
-        .frame(maxWidth: .infinity, minHeight: 160)
-        .padding()
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(style: StrokeStyle(lineWidth: 2, dash: [10]))
-                .foregroundColor(.gray)
-        )
-        .background(Color.white)
-        .cornerRadius(12)
+#Preview {
+    NavigationStack {
+        TabContainerView()
     }
-}
-
-struct RecordingRequirementRow: View {
-    var title: String
-    var description: String
-    var image: String
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            ZStack {
-                Color("AccentSecondary")
-                    .frame(width: 50, height: 50)
-                    .cornerRadius(8)
-                Image(image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 30, height: 30)
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(.black)
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding(.horizontal)
-    }
-}
-
-struct ErrorMessage: Identifiable {
-    let id = UUID()
-    let message: String
-}
-
-struct PracticeView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationStack {
-            PracticeView()
-        }
-    }
-}
-
+    .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
+} 

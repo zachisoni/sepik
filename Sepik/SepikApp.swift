@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct SepikApp: App {
@@ -17,5 +18,6 @@ struct SepikApp: App {
             .accentColor(Color("AccentPrimary"))
             .tint(Color("AccentPrimary"))
         }
+        .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
     }
 }
