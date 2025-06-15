@@ -86,11 +86,6 @@ struct PracticeContentView: View {
                                 .onTapGesture { viewModel.isPickerPresented = true }
                         }
 
-                        Text("Supported format: .MOV (Max size 5 gb)")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .padding(.horizontal)
-
                         NavigationLink {
                             if let url = viewModel.selectedVideo {
                                 LoadingView(videoURL: url)
@@ -115,7 +110,7 @@ struct PracticeContentView: View {
             isPresented: $viewModel.isPickerPresented,
             selection: $viewModel.selectedItem,
             matching: .videos,
-            preferredItemEncoding: .compatible
+            preferredItemEncoding: .current
         )
         .onChange(of: viewModel.selectedItem) { oldItem, newItem in
             viewModel.onSelectedItemChanged(oldValue: oldItem, newValue: newItem)

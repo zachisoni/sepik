@@ -5,6 +5,7 @@ struct LoadingView: View {
     @StateObject private var viewModel: AnalysisViewModel
     @Environment(\.modelContext) private var modelContext
     @State private var navigate = false
+    @State private var animationAmount = 1.0
 
     init(videoURL: URL) {
         _viewModel = StateObject(wrappedValue: AnalysisViewModel(videoURL: videoURL))
@@ -20,11 +21,18 @@ struct LoadingView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: 200)
+                    .scaleEffect(animationAmount)
+                    .onAppear {
+                        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                            animationAmount = 1.2
+                        }
+                    }
+                
                 if viewModel.isProcessing {
                     Text("We're processing your rehearsal right away!")
                         .font(.title2)
                         .fontWeight(.semibold)
-                        .foregroundColor(.black)
+                        .foregroundColor(Color("AccentPrimary"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
@@ -34,7 +42,8 @@ struct LoadingView: View {
         .preferredColorScheme(.light)
         .navigationDestination(isPresented: $navigate) {
             if let result = viewModel.result {
-                ResultView(result: result)
+                ResultView(result: result, isFromAnalysis: true)
+                    .navigationBarBackButtonHidden(true)
             }
         }
         .navigationBarBackButtonHidden(true)

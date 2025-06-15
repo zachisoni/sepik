@@ -16,7 +16,7 @@ class FacialExpressionAnalyzer {
         let urlAsset = AVURLAsset(url: videoURL)
         let durationCM: CMTime = try await urlAsset.load(.duration)
         let duration = durationCM.seconds
-        let sampleInterval: TimeInterval = 1.0
+        let sampleInterval: TimeInterval = 3.0 // Sample every 3 seconds instead of every second
 
         let generator = AVAssetImageGenerator(asset: urlAsset)
         generator.appliesPreferredTrackTransform = true
@@ -35,8 +35,9 @@ class FacialExpressionAnalyzer {
             let request = VNCoreMLRequest(model: model)
             try handler.perform([request])
             if let result = request.results?.first as? VNClassificationObservation {
+                // Only count as smile if confidence is very high (>= 0.8)
                 switch result.identifier {
-                case "smile": smileCount += 1
+                case "smile" where result.confidence >= 0.8: smileCount += 1
                 case "neutral": neutralCount += 1
                 default: break
                 }

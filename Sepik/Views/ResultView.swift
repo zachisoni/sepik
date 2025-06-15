@@ -3,20 +3,40 @@ import SwiftUI
 struct ResultView: View {
     let result: AnalysisResult
     let sessionDate: Date?
+    let isFromAnalysis: Bool
     private let userManager = UserManager.shared
+    @Environment(\.dismiss) private var dismiss
     
-    init(result: AnalysisResult, sessionDate: Date? = nil) {
+    init(result: AnalysisResult, sessionDate: Date? = nil, isFromAnalysis: Bool = false) {
         self.result = result
         self.sessionDate = sessionDate
+        self.isFromAnalysis = isFromAnalysis
     }
     
     // Computed properties for analysis
     private var totalFillerWords: Int {
-        result.fillerCounts.values.reduce(0, +)
+        result.fillerCounts.count
     }
     
     private var mostFrequentFillerWord: String {
-        result.fillerCounts.max(by: { $0.value < $1.value })?.key ?? "none"
+        // Get the most frequent filler word regardless of frequency
+        return result.fillerCounts.max(by: { $0.value < $1.value })?.key ?? "uh"
+    }
+    
+    private var fillerWordsDescription: String {
+        if totalFillerWords == 0 {
+            return "Great job! You didn't use any filler words. Keep up the excellent speaking pace."
+        } else {
+            let fillerWordsList = result.fillerCounts.compactMap { (word, count) in
+                count > 0 ? "\(word) (\(count)x)" : nil
+            }.joined(separator: ", ")
+            
+            if totalFillerWords <= 3 {
+                return "You used minimal filler words: \(fillerWordsList). This shows good control!"
+            } else {
+                return "Detected filler words: \(fillerWordsList). Try practicing with short pauses instead of these repetitive words."
+            }
+        }
     }
     
     private var smilePerMinute: Double {
@@ -60,14 +80,28 @@ struct ResultView: View {
                 // Header
                 VStack(spacing: 16) {
                     HStack {
-                        NavigationLink(destination: TabContainerView()) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 16, weight: .medium))
-                                Text("Back")
-                                    .font(.system(size: 16))
+                        if isFromAnalysis {
+                            NavigationLink(destination: TabContainerView()) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .medium))
+                                    Text("Back")
+                                        .font(.system(size: 16))
+                                }
+                                .foregroundColor(.white)
                             }
-                            .foregroundColor(.white)
+                        } else {
+                            Button(action: {
+                                dismiss()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .medium))
+                                    Text("Back")
+                                        .font(.system(size: 16))
+                                }
+                                .foregroundColor(.white)
+                            }
                         }
                         Spacer()
                     }
@@ -124,7 +158,7 @@ struct ResultView: View {
                                 iconColor: .orange,
                                 title: "Filler Words",
                                 value: "\(totalFillerWords) words",
-                                description: "You are using a lot of filler words such as '\(mostFrequentFillerWord)'. Try practicing with short pause instead."
+                                description: fillerWordsDescription
                             )
                             
                             // Expression Indicator

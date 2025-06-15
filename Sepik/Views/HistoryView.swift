@@ -22,22 +22,6 @@ struct HistoryView: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 16) {
-                    HStack {
-                        Button(action: {
-                            // Back action - in a real app this would navigate back
-                        }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 16, weight: .medium))
-                                Text("Back")
-                                    .font(.system(size: 16))
-                            }
-                            .foregroundColor(.white)
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    
                     Text("\(userManager.getUserName())'s Speaking\nAnalysis History")
                         .font(.title)
                         .fontWeight(.bold)
