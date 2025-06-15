@@ -1,13 +1,27 @@
 import SwiftUI
+import AVKit
 
 struct ResultView: View {
     let result: AnalysisResult
     let sessionDate: Date?
+    let videoURL: URL?
     private let userManager = UserManager.shared
     
-    init(result: AnalysisResult, sessionDate: Date? = nil) {
+    init(result: AnalysisResult, sessionDate: Date? = nil, videoURL: URL? = nil) {
         self.result = result
         self.sessionDate = sessionDate
+        self.videoURL = videoURL
+        
+        
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.titleTextAttributes = [
+            .font: UIFont.systemFont(ofSize: 17),
+            .foregroundColor: UIColor.white
+        ]
+        appearance.backgroundColor = UIColor(named: "AccentPrimary")
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
     
     // Computed properties for analysis
@@ -59,119 +73,130 @@ struct ResultView: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 16) {
-                    HStack {
-                        NavigationLink(destination: TabContainerView()) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 16, weight: .medium))
-                                Text("Back")
-                                    .font(.system(size: 16))
-                            }
-                            .foregroundColor(.white)
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("See what you might")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                        Text("improve here, \(userManager.getUserName())!")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                        
-                        if let session = getSessionDate() {
-                            Text("Result on \(session)")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.9))
-                                .fontWeight(.bold)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
+                    Text("You're born for the stage, \(userManager.getUserName())! Keep it up!")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
                 }
                 .padding(.top, 8)
-                .padding(.bottom, 24)
+                
+                // Video Player
+                if let url = videoURL {
+                    VideoPlayer(player: AVPlayer(url: url))
+                        .frame(height: 200)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .padding(.bottom, 16)
+                }
+                
+                HStack{
+                    Text("Confident")
+                        .font(.footnote)
+                        .frame(minHeight: 30)
+                        .fontWeight(.regular)
+                        .foregroundColor(.green)
+                        .padding(.horizontal, 32)
+                        .background(Color.green.opacity(0.1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 5)
+                                .stroke(.green, lineWidth: 2)
+                        )
+                        .cornerRadius(5)
+//                        .padding(.horizontal)
+                    
+                    if let session = getSessionDate() {
+                        Text("Result on \(session)")
+                            .font(.callout)
+                            .frame(maxWidth: .infinity, minHeight: 30)
+                            .foregroundColor(.black)
+                            .fontWeight(.regular)
+                    }
+                    
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+                .padding(.bottom, 16)
+                
                 
                 // Content
                 ScrollView {
                     VStack(spacing: 16) {
-                        // Rehearsal Time Card
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Rehearsal Time: \(formatDuration(result.duration))")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                        )
-                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-                        .padding(.horizontal)
-                        
                         // Indicator Cards
                         VStack(spacing: 12) {
+                            // Smile Indicator
+                            IndicatorCard(
+                                icon: "indicator1",
+                                iconColor: .green,
+                                title: "Smile",
+                                value: "\(result.smileFrames)×",
+                                description: "You smiled so well! Keep shining..."
+                            )
+                            
                             // Filler Words Indicator
                             IndicatorCard(
-                                icon: "mouth.fill",
+                                icon: "indicator2",
                                 iconColor: .orange,
                                 title: "Filler Words",
                                 value: "\(totalFillerWords) words",
-                                description: "You are using a lot of filler words such as '\(mostFrequentFillerWord)'. Try practicing with short pause instead."
+                                description: "There's no other words as imposters. Nice job!"
                             )
                             
-                            // Expression Indicator
+                            // Speaking Pace Indicator
                             IndicatorCard(
-                                icon: expressionQuality == "Good Expressions" ? "face.smiling" : "face.dashed",
-                                iconColor: expressionQuality == "Good Expressions" ? .green : .red,
-                                title: expressionQuality,
-                                value: String(format: "%.1f smiles/min", smilePerMinute),
-                                description: expressionQuality == "Good Expressions" ? 
-                                    "Great job! Keep smiling to engage your audience." : 
-                                    "Try to smile more to appear more engaging and confident."
+                                icon: "indicator3",
+                                iconColor: .blue,
+                                title: "Speaking Pace",
+                                value: "00 /",
+                                description: "Great, you're not in a rush and got an ideal speaking pace. Keep it up!"
                             )
                             
-                            // Pace Indicator
+                            // Eye Contact Indicator
                             IndicatorCard(
-                                icon: paceIcon(),
-                                iconColor: paceColor(),
-                                title: paceCategory,
-                                value: "\(Int(result.wpm)) wpm",
-                                description: paceDescription
+                                icon: "indicator4",
+                                iconColor: .purple,
+                                title: "Eye Contact",
+                                value: "70%",
+                                description: "Great, you're not in a rush and got an ideal speaking pace. Keep it up!"
                             )
                         }
                         .padding(.horizontal)
-                        
-                        // Restart Analysis Button
-                        NavigationLink(destination: TabContainerView()) {
-                            Text("Restart Analysis")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color("AccentPrimary"))
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                        .padding(.bottom, 100) // Space for tab bar if needed
+                        .padding(.bottom, 16)
                     }
                 }
+                
+                // Fixed Buttons
+                HStack(spacing: 16) {
+                    NavigationLink(destination: HistoryView()) {
+                        Text("Go to history")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .foregroundColor(Color("AccentPrimary"))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color("AccentPrimary"), lineWidth: 2)
+                            )
+                            .cornerRadius(12)
+                    }
+                    NavigationLink(destination: TabContainerView()) {
+                        Text("Restart analysis")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color("AccentPrimary"))
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .background(Color.white)
             }
         }
-        .navigationBarBackButtonHidden(true)
-    }
-    
-    private func formatDuration(_ duration: TimeInterval) -> String {
-        let minutes = Int(duration) / 60
-        let seconds = Int(duration) % 60
-        return "\(minutes)min \(seconds) s"
+        .navigationBarBackButtonHidden(false)
+        .navigationTitle("Analysis Result")
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func getSessionDate() -> String? {
@@ -206,36 +231,24 @@ struct IndicatorCard: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Icon
-            ZStack {
-                Circle()
-                    .stroke(iconColor, lineWidth: 3)
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 24))
-                    .foregroundColor(iconColor)
-            }
-            .frame(minWidth: 50)
             
             // Content
             VStack(alignment: .leading, spacing: 6) {
-                VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    
+                    Image(icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(iconColor)
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold, design: .default))
+                        .font(.callout)
                         .foregroundColor(.black)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
-                    
-                    Text(value)
-                        .font(.system(size: 14, weight: .medium, design: .default))
-                        .foregroundColor(.gray)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
                 }
                 
                 Text(description)
-                    .font(.system(size: 12, weight: .regular, design: .default))
+                    .font(.footnote)
                     .foregroundColor(.gray)
                     .lineLimit(3)
                     .minimumScaleFactor(0.9)
@@ -244,10 +257,15 @@ struct IndicatorCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             
             Spacer(minLength: 0)
+            Text(value)
+                .font(.system(size: 14, weight: .medium, design: .default))
+                .foregroundColor(.gray)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
-        .frame(height: 120)
+        .frame(height: 100)
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+//        .padding(.vertical, 12)
         .background(Color.white)
         .cornerRadius(12)
         .overlay(
@@ -261,15 +279,19 @@ struct IndicatorCard: View {
 struct ResultView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            ResultView(result: AnalysisResult(
-                duration: 1850,
-                smileFrames: 12,
-                neutralFrames: 8,
-                totalWords: 340,
-                wpm: 110,
-                fillerCounts: ["uh": 5, "like": 3, "you know": 2]
-            ))
+            ResultView(
+                result: AnalysisResult(
+                    duration: 1850,
+                    smileFrames: 6,
+                    neutralFrames: 8,
+                    totalWords: 340,
+                    wpm: 120,
+                    fillerCounts: [:]
+                ),
+                sessionDate: Date(),
+                videoURL: URL(string: "https://example.com/video.mp4")
+            )
         }
         .modelContainer(for: PracticeSession.self)
     }
-} 
+}
