@@ -39,15 +39,18 @@ struct ResultView: View {
         }
     }
     
-    private var smilePerMinute: Double {
-        let minutes = result.duration / 60.0
-        return Double(result.smileFrames) / minutes
+    private var smilePercentage: Double {
+        let total = result.smileFrames + result.neutralFrames
+        return total > 0 ? Double(result.smileFrames) / Double(total) * 100 : 0
     }
     
     private var expressionQuality: String {
-        let total = result.smileFrames + result.neutralFrames
-        let smilePct = total > 0 ? Double(result.smileFrames) / Double(total) : 0
-        return smilePct >= 0.3 ? "Good Expressions" : "Bad Expressions"
+        let smilePct = smilePercentage / 100.0
+        switch smilePct {
+        case 0.3...: return "Good Expressions"
+        case 0.15..<0.3: return "Flat Expressions"
+        default: return "Bad Expressions"
+        }
     }
     
     private var paceCategory: String {
@@ -163,13 +166,11 @@ struct ResultView: View {
                             
                             // Expression Indicator
                             IndicatorCard(
-                                icon: expressionQuality == "Good Expressions" ? "face.smiling" : "face.dashed",
-                                iconColor: expressionQuality == "Good Expressions" ? .green : .red,
+                                icon: expressionIcon(),
+                                iconColor: expressionColor(),
                                 title: expressionQuality,
-                                value: String(format: "%.1f smiles/min", smilePerMinute),
-                                description: expressionQuality == "Good Expressions" ? 
-                                    "Great job! Keep smiling to engage your audience." : 
-                                    "Try to smile more to appear more engaging and confident."
+                                value: String(format: "%.1f%%", smilePercentage),
+                                description: expressionDescription()
                             )
                             
                             // Pace Indicator
@@ -227,6 +228,33 @@ struct ResultView: View {
         case ..<110: return .blue
         case 110...150: return .green
         default: return .red
+        }
+    }
+    
+    private func expressionIcon() -> String {
+        switch expressionQuality {
+        case "Good Expressions": return "face.smiling"
+        case "Flat Expressions": return "face.dashed"
+        default: return "face.dashed"
+        }
+    }
+    
+    private func expressionColor() -> Color {
+        switch expressionQuality {
+        case "Good Expressions": return .green
+        case "Flat Expressions": return .orange
+        default: return .red
+        }
+    }
+    
+    private func expressionDescription() -> String {
+        switch expressionQuality {
+        case "Good Expressions":
+            return "Great job! Keep smiling to engage your audience."
+        case "Flat Expressions":
+            return "Try to smile more often to appear more engaging and confident."
+        default:
+            return "You need to smile much more to appear engaging and confident."
         }
     }
 }

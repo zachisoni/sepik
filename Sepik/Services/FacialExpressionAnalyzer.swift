@@ -16,7 +16,7 @@ class FacialExpressionAnalyzer {
         let urlAsset = AVURLAsset(url: videoURL)
         let durationCM: CMTime = try await urlAsset.load(.duration)
         let duration = durationCM.seconds
-        let sampleInterval: TimeInterval = 3.0 // Sample every 3 seconds instead of every second
+        let sampleInterval: TimeInterval = 1.0
 
         let generator = AVAssetImageGenerator(asset: urlAsset)
         generator.appliesPreferredTrackTransform = true
