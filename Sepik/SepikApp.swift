@@ -7,11 +7,13 @@
 
 import SwiftUI
 
+import SwiftUI
+
 @main
-struct SepikApp: App {
+struct SepikApp: App { // Ganti 'SepikApp' dengan nama aplikasi Anda
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            EyeContactAnalysisView() // <--- Ganti view default dengan ini
         }
     }
 }
