@@ -10,6 +10,7 @@ class AnalysisResult {
     var wpm: Double
     var fillerCountsData: Data // Store dictionary as Data
     var videoURLString: String? // Store video URL as string
+    var eyeContactScore: Double? // Percentage of eye contact
     
     // Computed property to access filler counts as dictionary
     var fillerCounts: [String: Int] {
@@ -35,7 +36,7 @@ class AnalysisResult {
         }
     }
     
-    init(duration: TimeInterval, smileFrames: Int, neutralFrames: Int, totalWords: Int, wpm: Double, fillerCounts: [String: Int], videoURL: URL? = nil) {
+    init(duration: TimeInterval, smileFrames: Int, neutralFrames: Int, totalWords: Int, wpm: Double, fillerCounts: [String: Int], videoURL: URL? = nil, eyeContactScore: Double? = nil) {
         self.duration = duration
         self.smileFrames = smileFrames
         self.neutralFrames = neutralFrames
@@ -43,5 +44,6 @@ class AnalysisResult {
         self.wpm = wpm
         self.fillerCountsData = (try? JSONEncoder().encode(fillerCounts)) ?? Data()
         self.videoURLString = videoURL?.absoluteString
+        self.eyeContactScore = eyeContactScore
     }
 } 

@@ -80,6 +80,42 @@ struct ResultView: View {
         default: return "You're speaking too fast"
         }
     }
+    
+    private var eyeContactQuality: String {
+        guard let score = result.eyeContactScore else { return "Eye Contact" }
+        switch score {
+        case 60...70: return "Excellent Eye Contact"
+        case 40..<60, 71...80: return "Moderate Eye Contact"
+        default: return "Poor Eye Contact"
+        }
+    }
+    
+    private func eyeContactColor() -> Color {
+        guard let score = result.eyeContactScore else { return .purple }
+        switch score {
+        case 60...70: return .green
+        case 40..<60, 71...80: return .orange
+        default: return .red
+        }
+    }
+    
+    private func eyeContactDescription() -> String {
+        guard let score = result.eyeContactScore else { 
+            return "Eye contact analysis will be available in future updates."
+        }
+        switch score {
+        case 60...70:
+            return "Perfect! You maintained excellent eye contact at the ideal level."
+        case 40..<60:
+            return "Good, but try to maintain more consistent eye contact with your audience."
+        case 71...80:
+            return "Good, but try to vary your gaze occasionally to appear more natural."
+        case 81...:
+            return "You're looking too intensely. Try to blink and look away occasionally for a more natural delivery."
+        default:
+            return "Focus on maintaining more eye contact with your audience to build connection and trust."
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -171,13 +207,13 @@ struct ResultView: View {
                                 description: paceDescription
                             )
                             
-                            // Eye Contact Indicator (placeholder for future feature)
+                            // Eye Contact Indicator
                             IndicatorCard(
                                 icon: "indicator4",
-                                iconColor: .purple,
-                                title: "Eye Contact",
-                                value: "Coming Soon",
-                                description: "Eye contact analysis will be available in future updates."
+                                iconColor: eyeContactColor(),
+                                title: eyeContactQuality,
+                                value: result.eyeContactScore != nil ? String(format: "%.1f%%", result.eyeContactScore!) : "Coming Soon",
+                                description: eyeContactDescription()
                             )
                         }
                         .padding(.horizontal)
@@ -344,7 +380,8 @@ struct ResultView_Previews: PreviewProvider {
                     totalWords: 340,
                     wpm: 120,
                     fillerCounts: ["uh": 5, "like": 3],
-                    videoURL: URL(string: "https://example.com/video.mp4")
+                    videoURL: URL(string: "https://example.com/video.mp4"),
+                    eyeContactScore: 65.0
                 ),
                 sessionDate: Date(),
                 isFromAnalysis: true,
