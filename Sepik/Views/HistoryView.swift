@@ -35,9 +35,9 @@ struct HistoryView: View {
                 
                 // History List
                 List {
-                    ForEach(viewModel.sessions, id: \.id) { session in
-                        if let result = session.result {
-                            NavigationLink(destination: ResultView(result: result, sessionDate: session.date)) {
+                                            ForEach(viewModel.sessions, id: \.id) { session in
+                            if let result = session.result {
+                                NavigationLink(destination: ResultView(result: result, sessionDate: session.date, isFromAnalysis: false)) {
                                 HistoryRowView(session: session)
                             }
                             .listRowBackground(Color.clear)

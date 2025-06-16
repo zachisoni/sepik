@@ -6,8 +6,10 @@ struct LoadingView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var navigate = false
     @State private var animationAmount = 1.0
+    private let videoURL: URL
 
     init(videoURL: URL) {
+        self.videoURL = videoURL
         _viewModel = StateObject(wrappedValue: AnalysisViewModel(videoURL: videoURL))
     }
 
@@ -42,7 +44,7 @@ struct LoadingView: View {
         .preferredColorScheme(.light)
         .navigationDestination(isPresented: $navigate) {
             if let result = viewModel.result {
-                ResultView(result: result, isFromAnalysis: true)
+                ResultView(result: result, isFromAnalysis: true, videoURL: videoURL)
                     .navigationBarBackButtonHidden(true)
             }
         }
