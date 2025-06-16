@@ -34,26 +34,48 @@ struct HistoryView: View {
                 .padding(.bottom, 24)
                 
                 // History List
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.sessions, id: \.id) { session in
-                            if let result = session.result {
-                                NavigationLink(destination: ResultView(result: result, sessionDate: session.date)) {
-                                    HistoryRowView(session: session)
+                List {
+                    ForEach(viewModel.sessions, id: \.id) { session in
+                        if let result = session.result {
+                            NavigationLink(destination: ResultView(result: result, sessionDate: session.date)) {
+                                HistoryRowView(session: session)
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button {
+                                    viewModel.deleteSession(session)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
                                 }
-                                .buttonStyle(PlainButtonStyle())
+                                .tint(.red)
                             }
                         }
                     }
-                    .padding(.horizontal)
-                    .padding(.bottom, 100) // Space for tab bar
+                    .onDelete(perform: deleteItems)
+                    
+                    // Add spacing at bottom for tab bar
+                    Color.clear
+                        .frame(height: 100)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                 }
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
+                .padding(.horizontal)
                 
                 Spacer()
             }
         }
         .onAppear {
             viewModel.configure(with: modelContext)
+        }
+    }
+    
+    private func deleteItems(offsets: IndexSet) {
+        for index in offsets {
+            let session = viewModel.sessions[index]
+            viewModel.deleteSession(session)
         }
     }
 }
@@ -68,15 +90,12 @@ struct HistoryRowView: View {
                 .foregroundColor(.black)
             
             Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14))
-                .foregroundColor(.gray)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
         .background(Color.white)
         .cornerRadius(12)
+        .padding(.vertical, 2)
     }
 }
 

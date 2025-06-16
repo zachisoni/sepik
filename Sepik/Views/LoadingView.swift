@@ -15,12 +15,12 @@ struct LoadingView: View {
         ZStack {
             Color("AccentColor")
                 .ignoresSafeArea()
-            VStack(spacing: 24) {
+            VStack(spacing: 40) {
                 Spacer()
-                Image("barchart")
+                Image("microphone")
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 200)
+                    .frame(height: 150)
                     .scaleEffect(animationAmount)
                     .onAppear {
                         withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {

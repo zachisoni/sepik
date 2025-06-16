@@ -19,21 +19,6 @@ struct PracticeView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Back Button
-                    HStack {
-                        NavigationLink(destination: InputNameView()) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 16, weight: .medium))
-                                Text("Back")
-                                    .font(.system(size: 16))
-                            }
-                            .foregroundColor(Color("AccentPrimary"))
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal)
-                    
                     Text("Recording Requirements")
                         .font(.title2)
                         .fontWeight(.semibold)
