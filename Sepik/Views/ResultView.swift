@@ -21,8 +21,16 @@ struct ResultView: View {
             .foregroundColor: UIColor.white
         ]
         appearance.backgroundColor = UIColor(named: "AccentPrimary")
+        appearance.shadowColor = nil
+        
+        // Configure back button
+        let backImage = UIImage(systemName: "chevron.backward")?.withTintColor(.white, renderingMode: .alwaysOriginal)
+        appearance.setBackIndicatorImage(backImage, transitionMaskImage: backImage)
+        appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: -10, vertical: 0)
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().tintColor = .white
     }
     
     // Computed properties for analysis
@@ -350,7 +358,6 @@ struct IndicatorCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer(minLength: 0)
             Text(value)
                 .font(.system(size: 14, weight: .medium, design: .default))
                 .foregroundColor(.gray)
