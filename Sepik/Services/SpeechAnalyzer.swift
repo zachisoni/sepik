@@ -76,8 +76,8 @@ class SpeechAnalyzer {
     /// Check if a word is a predefined filler word
     private func isPredefinedFillerWord(_ word: String) -> Bool {
         let predefinedFillers = [
-            "uh", "um", "ah", "er", "eh",
-            "like", "you know", "so", "well", "actually",
+            "uh", "um", "ah", "er", "eh", "em", "hm", "hmm", "mmm",
+            "like", "you know", "so", "well", "actually", "uhh", "umh",
             "basically", "literally", "obviously", "totally",
             "kind of", "sort of", "i mean", "you see",
             "right", "okay", "alright", "anyway"
