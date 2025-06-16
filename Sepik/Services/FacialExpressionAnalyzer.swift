@@ -8,7 +8,7 @@ class FacialExpressionAnalyzer {
 
     init() throws {
         let config = MLModelConfiguration()
-        let mlModel = try FacialGestures(configuration: config).model
+        let mlModel = try SmileDetection(configuration: config).model
         model = try VNCoreMLModel(for: mlModel)
     }
 
@@ -37,7 +37,7 @@ class FacialExpressionAnalyzer {
             if let result = request.results?.first as? VNClassificationObservation {
                 switch result.identifier {
                 case "smile": smileCount += 1
-                case "neutral": neutralCount += 1
+                case "non_smile": neutralCount += 1
                 default: break
                 }
             }
