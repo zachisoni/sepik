@@ -2,16 +2,22 @@
 //  SepikApp.swift
 //  Sepik
 //
-//  Created by Asad on 12/06/25.
+//  Created by reynaldo on 12/06/25.
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct SepikApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                OnboardingView()
+            }
+            .accentColor(Color("AccentPrimary"))
+            .tint(Color("AccentPrimary"))
         }
+        .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
     }
 }

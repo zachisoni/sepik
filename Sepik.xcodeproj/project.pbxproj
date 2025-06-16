@@ -260,9 +260,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B6SZL9KS58;
+				DEVELOPMENT_TEAM = 74859D4FR4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Sepik needs access to your camera to record videos for speech analysis.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sepik needs access to your microphone to analyze your speech patterns and provide feedback on your speaking performance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Sepik needs access to your photo library to let you select videos for speech analysis.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Sepik uses speech recognition to analyze your speech for filler words and speaking pace to help improve your presentation skills.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -273,7 +277,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.asaduddin.Sepik;
+				PRODUCT_BUNDLE_IDENTIFIER = com.developer.sepik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -288,9 +292,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B6SZL9KS58;
+				DEVELOPMENT_TEAM = 74859D4FR4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Sepik needs access to your camera to record videos for speech analysis.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sepik needs access to your microphone to analyze your speech patterns and provide feedback on your speaking performance.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Sepik needs access to your photo library to let you select videos for speech analysis.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Sepik uses speech recognition to analyze your speech for filler words and speaking pace to help improve your presentation skills.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -301,7 +309,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.asaduddin.Sepik;
+				PRODUCT_BUNDLE_IDENTIFIER = com.developer.sepik;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
