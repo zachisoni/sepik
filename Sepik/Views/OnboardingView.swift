@@ -152,13 +152,13 @@ struct OnboardingView: View {
                             }
                             .padding(.horizontal)
 
-                            NavigationLink(destination: TabContainerView()) {
+                                                        NavigationLink(destination: TabContainerView(initialTab: 0)) {
                                 Text("Get Started!")
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(inputNameViewModel.canProceed ? Color("AccentPrimary") : Color("AccentDisabled"))
-                                    .foregroundColor(.white)
-                                    .cornerRadius(8)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(inputNameViewModel.canProceed ? Color("AccentPrimary") : Color("AccentDisabled"))
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
                             }
                             .disabled(!inputNameViewModel.canProceed)
                             .padding(.horizontal)

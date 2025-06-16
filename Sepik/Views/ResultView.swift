@@ -100,11 +100,12 @@ struct ResultView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
+                        .padding(.bottom, 8)
                 }
                 .padding(.top, 8)
                 
                 // Video Player
-                if let url = videoURL {
+                if let url = videoURL ?? result.videoURL {
                     VideoPlayer(player: AVPlayer(url: url))
                         .frame(height: 200)
                         .cornerRadius(10)
@@ -186,20 +187,20 @@ struct ResultView: View {
                 
                 // Fixed Buttons
                 HStack(spacing: 16) {
-                    NavigationLink(destination: HistoryView()) {
-                        Text("Go to history")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .foregroundColor(Color("AccentPrimary"))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color("AccentPrimary"), lineWidth: 2)
-                            )
-                            .cornerRadius(12)
-                    }
-                    
                     if isFromAnalysis {
-                        NavigationLink(destination: TabContainerView()) {
+                        NavigationLink(destination: TabContainerView(initialTab: 1)) {
+                            Text("Go to history")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .foregroundColor(Color("AccentPrimary"))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color("AccentPrimary"), lineWidth: 2)
+                                )
+                                .cornerRadius(12)
+                        }
+                        
+                        NavigationLink(destination: TabContainerView(initialTab: 0)) {
                             Text("Restart analysis")
                                 .frame(maxWidth: .infinity)
                                 .padding()
@@ -226,7 +227,7 @@ struct ResultView: View {
                 .background(Color.white)
             }
         }
-        .navigationBarBackButtonHidden(false)
+        .navigationBarBackButtonHidden(!isFromAnalysis)
         .navigationTitle("Analysis Result")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -342,7 +343,8 @@ struct ResultView_Previews: PreviewProvider {
                     neutralFrames: 8,
                     totalWords: 340,
                     wpm: 120,
-                    fillerCounts: ["uh": 5, "like": 3]
+                    fillerCounts: ["uh": 5, "like": 3],
+                    videoURL: URL(string: "https://example.com/video.mp4")
                 ),
                 sessionDate: Date(),
                 isFromAnalysis: true,

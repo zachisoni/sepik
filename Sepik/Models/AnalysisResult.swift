@@ -9,6 +9,7 @@ class AnalysisResult {
     var totalWords: Int
     var wpm: Double
     var fillerCountsData: Data // Store dictionary as Data
+    var videoURLString: String? // Store video URL as string
     
     // Computed property to access filler counts as dictionary
     var fillerCounts: [String: Int] {
@@ -23,12 +24,24 @@ class AnalysisResult {
         }
     }
     
-    init(duration: TimeInterval, smileFrames: Int, neutralFrames: Int, totalWords: Int, wpm: Double, fillerCounts: [String: Int]) {
+    // Computed property to access video URL
+    var videoURL: URL? {
+        get {
+            guard let urlString = videoURLString else { return nil }
+            return URL(string: urlString)
+        }
+        set {
+            videoURLString = newValue?.absoluteString
+        }
+    }
+    
+    init(duration: TimeInterval, smileFrames: Int, neutralFrames: Int, totalWords: Int, wpm: Double, fillerCounts: [String: Int], videoURL: URL? = nil) {
         self.duration = duration
         self.smileFrames = smileFrames
         self.neutralFrames = neutralFrames
         self.totalWords = totalWords
         self.wpm = wpm
         self.fillerCountsData = (try? JSONEncoder().encode(fillerCounts)) ?? Data()
+        self.videoURLString = videoURL?.absoluteString
     }
 } 

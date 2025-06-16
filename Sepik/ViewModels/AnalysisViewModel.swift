@@ -51,7 +51,8 @@ class AnalysisViewModel: ObservableObject {
                 neutralFrames: neutralFrames,
                 totalWords: totalWords,
                 wpm: wpm,
-                fillerCounts: fillerCounts
+                fillerCounts: fillerCounts,
+                videoURL: videoURL
             )
             result = analysis
             

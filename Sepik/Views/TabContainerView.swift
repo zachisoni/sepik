@@ -11,8 +11,12 @@ import PhotosUI
 import AVKit
 
 struct TabContainerView: View {
-    @State private var selectedTab = 0
+    @State private var selectedTab: Int
     @Environment(\.modelContext) private var modelContext
+    
+    init(initialTab: Int = 0) {
+        _selectedTab = State(initialValue: initialTab)
+    }
     
     var body: some View {
         ZStack {
@@ -145,7 +149,7 @@ struct PracticeContentView: View {
 
 #Preview {
     NavigationStack {
-        TabContainerView()
+        TabContainerView(initialTab: 0)
     }
     .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
 } 
