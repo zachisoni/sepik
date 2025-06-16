@@ -12,16 +12,23 @@ struct ResultView: View {
         self.sessionDate = sessionDate
         self.videoURL = videoURL
         
-        
-        
+        // Configure navigation bar appearance
         let appearance = UINavigationBarAppearance()
         appearance.titleTextAttributes = [
             .font: UIFont.systemFont(ofSize: 17),
             .foregroundColor: UIColor.white
         ]
         appearance.backgroundColor = UIColor(named: "AccentPrimary")
+        appearance.shadowColor = nil
+        
+        // Configure back button
+        let backImage = UIImage(systemName: "chevron.backward")?.withTintColor(.white, renderingMode: .alwaysOriginal)
+        appearance.setBackIndicatorImage(backImage, transitionMaskImage: backImage)
+        appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.backButtonAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: -10, vertical: 0)
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().tintColor = .white
     }
     
     // Computed properties for analysis
@@ -91,7 +98,7 @@ struct ResultView: View {
                         .padding(.bottom, 16)
                 }
                 
-                HStack{
+                HStack {
                     Text("Confident")
                         .font(.footnote)
                         .frame(minHeight: 30)
@@ -104,7 +111,6 @@ struct ResultView: View {
                                 .stroke(.green, lineWidth: 2)
                         )
                         .cornerRadius(5)
-//                        .padding(.horizontal)
                     
                     if let session = getSessionDate() {
                         Text("Result on \(session)")
@@ -113,12 +119,10 @@ struct ResultView: View {
                             .foregroundColor(.black)
                             .fontWeight(.regular)
                     }
-                    
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal)
                 .padding(.bottom, 16)
-                
                 
                 // Content
                 ScrollView {
@@ -148,8 +152,8 @@ struct ResultView: View {
                                 icon: "indicator3",
                                 iconColor: .blue,
                                 title: "Speaking Pace",
-                                value: "00 /",
-                                description: "Great, you're not in a rush and got an ideal speaking pace. Keep it up!"
+                                value: "\(result.wpm) wpm", // Updated to show actual wpm
+                                description: paceDescription
                             )
                             
                             // Eye Contact Indicator
@@ -157,8 +161,8 @@ struct ResultView: View {
                                 icon: "indicator4",
                                 iconColor: .purple,
                                 title: "Eye Contact",
-                                value: "70%",
-                                description: "Great, you're not in a rush and got an ideal speaking pace. Keep it up!"
+                                value: "\(Int(result.eyeContactPercentage))%", // Updated to use eyeContactPercentage
+                                description: "Great eye contact! Keep engaging your audience."
                             )
                         }
                         .padding(.horizontal)
@@ -231,21 +235,18 @@ struct IndicatorCard: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
+            Image(icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 20, height: 20)
+                .foregroundColor(iconColor)
             
             // Content
             VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    
-                    Image(icon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 25, height: 25)
-                        .foregroundColor(iconColor)
-                    Text(title)
-                        .font(.callout)
-                        .foregroundColor(.black)
-                        .lineLimit(1)
-                }
+                Text(title)
+                    .font(.callout)
+                    .foregroundColor(.black)
+                    .lineLimit(1)
                 
                 Text(description)
                     .font(.footnote)
@@ -256,7 +257,6 @@ struct IndicatorCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            Spacer(minLength: 0)
             Text(value)
                 .font(.system(size: 14, weight: .medium, design: .default))
                 .foregroundColor(.gray)
@@ -265,7 +265,6 @@ struct IndicatorCard: View {
         }
         .frame(height: 100)
         .padding(.horizontal, 16)
-//        .padding(.vertical, 12)
         .background(Color.white)
         .cornerRadius(12)
         .overlay(
@@ -286,7 +285,7 @@ struct ResultView_Previews: PreviewProvider {
                     neutralFrames: 8,
                     totalWords: 340,
                     wpm: 120,
-                    fillerCounts: [:]
+                    fillerCounts: ["um": 2, "uh": 1]
                 ),
                 sessionDate: Date(),
                 videoURL: URL(string: "https://example.com/video.mp4")
