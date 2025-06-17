@@ -8,7 +8,7 @@ class FacialExpressionAnalyzer {
 
     init() throws {
         let config = MLModelConfiguration()
-        let mlModel = try FacialGestures(configuration: config).model
+        let mlModel = try SmileDetection(configuration: config).model
         model = try VNCoreMLModel(for: mlModel)
     }
 
