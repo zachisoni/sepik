@@ -88,6 +88,7 @@ struct ResultView: View {
                         .padding(.horizontal)
                 }
                 .padding(.top, 8)
+                .padding(.bottom)
                 
                 // Video Player
                 if let url = videoURL {
@@ -126,26 +127,8 @@ struct ResultView: View {
                 
                 // Content
                 ScrollView {
-                    VStack(spacing: 16) {
                         // Indicator Cards
-                        VStack(spacing: 12) {
-                            // Smile Indicator
-                            IndicatorCard(
-                                icon: "indicator1",
-                                iconColor: .green,
-                                title: "Smile",
-                                value: "\(result.smileFrames)×",
-                                description: "You smiled so well! Keep shining..."
-                            )
-                            
-                            // Filler Words Indicator
-                            IndicatorCard(
-                                icon: "indicator2",
-                                iconColor: .orange,
-                                title: "Filler Words",
-                                value: "\(totalFillerWords) words",
-                                description: "There's no other words as imposters. Nice job!"
-                            )
+                        VStack(spacing: 16) {
                             
                             // Speaking Pace Indicator
                             IndicatorCard(
@@ -156,6 +139,17 @@ struct ResultView: View {
                                 description: paceDescription
                             )
                             
+                            
+                            // Smile Indicator
+                            IndicatorCard(
+                                icon: "indicator1",
+                                iconColor: .green,
+                                title: "Expression",
+                                value: "\(result.smileFrames)×",
+                                description: "You smiled so well! Keep shining..."
+                            )
+                            
+                            
                             // Eye Contact Indicator
                             IndicatorCard(
                                 icon: "indicator4",
@@ -164,10 +158,18 @@ struct ResultView: View {
                                 value: "\(Int(result.eyeContactPercentage))%", // Updated to use eyeContactPercentage
                                 description: "Great eye contact! Keep engaging your audience."
                             )
+                            
+                            // Filler Words Indicator
+                            IndicatorCard(
+                                icon: "indicator2",
+                                iconColor: .orange,
+                                title: "Filler Words",
+                                value: "\(totalFillerWords) words",
+                                description: "There's no other words as imposters. Nice job!"
+                            )
                         }
                         .padding(.horizontal)
                         .padding(.bottom, 16)
-                    }
                 }
                 
                 // Fixed Buttons
@@ -235,18 +237,21 @@ struct IndicatorCard: View {
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(icon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20, height: 20)
-                .foregroundColor(iconColor)
             
             // Content
             VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.callout)
-                    .foregroundColor(.black)
-                    .lineLimit(1)
+                HStack(alignment: .top, spacing: 8) {
+                    Image(icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 25, height: 25)
+                        .foregroundColor(iconColor)
+                    
+                    Text(title)
+                        .font(.callout)
+                        .foregroundColor(.black)
+                        .lineLimit(1)
+                }.frame(maxWidth: .infinity, alignment: .leading)
                 
                 Text(description)
                     .font(.footnote)

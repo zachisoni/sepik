@@ -14,51 +14,56 @@ struct PracticeView: View {
 
     var body: some View {
         ZStack {
-            Color("AccentColor")
-                .ignoresSafeArea()
+            VStack(spacing: 0) {
+                Color("AccentPrimary")
+                    .frame(height: UIScreen.main.bounds.height * 0.4)
+                Color.white
+            }
+            .ignoresSafeArea()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Back Button
-                    HStack {
-                        NavigationLink(destination: InputNameView()) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 16, weight: .medium))
-                                Text("Back")
-                                    .font(.system(size: 16))
-                            }
-                            .foregroundColor(Color("AccentPrimary"))
-                        }
-                        Spacer()
-                    }
-                    .padding(.horizontal)
+                VStack(alignment: .leading, spacing: 16) {
                     
-                    Text("Recording Requirements")
-                        .font(.title2)
+                    Text("Record, input and analyze your rehearsal video.")
+                        .font(.title)
                         .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                    
+                    VStack(alignment: .leading, spacing: 24){
+                        Text("Recording Guides")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
 
-                    RecordingRequirementRow(
-                        title: "Face exposed in the video",
-                        description: "Make sure your face is clearly visible in the frame.",
-                        image: "rules1"
-                    )
+                        RecordingRequirementRow(
+                            title: "Face exposed in the video",
+                            description: "Ensure that your face is fully visible and centered within the camera frame",
+                            image: "rules1"
+                        )
 
-                    RecordingRequirementRow(
-                        title: "No crowded/fare situation",
-                        description: "Avoid recording in crowded or noisy environments.",
-                        image: "rules2"
-                    )
+                        RecordingRequirementRow(
+                            title: "No crowded/fare situation",
+                            description: "Choose a quiet place away from crowds or public activity before recording",
+                            image: "rules2"
+                        )
 
-                    RecordingRequirementRow(
-                        title: "Natural/normal lighting",
-                        description: "Ensure good lighting so your expressions are captured correctly.",
-                        image: "rules3"
-                    )
+                        RecordingRequirementRow(
+                            title: "Natural/normal lighting",
+                            description: "For clear video, use soft, natural lighting and avoid dark or overly bright settings",
+                            image: "rules3"
+                        )
+                    }.frame(maxWidth: .infinity)
+                        .padding(24)
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.black.opacity(0.5), lineWidth: 0.5)
+                        )
 
                     VStack(spacing: 16) {
                         if let videoURL = viewModel.selectedVideo {
@@ -68,14 +73,8 @@ struct PracticeView: View {
                                 .padding(.horizontal)
                         } else {
                             DashedUploadBox()
-                                .padding(.horizontal)
                                 .onTapGesture { viewModel.isPickerPresented = true }
                         }
-
-                        Text("Supported format: .MOV (Max size 5 gb)")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .padding(.horizontal)
 
                         NavigationLink {
                             if let url = viewModel.selectedVideo {
@@ -90,11 +89,14 @@ struct PracticeView: View {
                                 .cornerRadius(8)
                         }
                         .disabled(!viewModel.canProceed)
-                        .padding(.horizontal)
+
                     }
                 }
                 .padding(.vertical)
+            }.padding(.horizontal).safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 60)
             }
+            .scrollIndicators(.hidden)
         }
         .photosPicker(
             isPresented: $viewModel.isPickerPresented,
@@ -122,6 +124,7 @@ struct PracticeView: View {
         )) { error in
             Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
         }
+        .navigationTitle("Analysis")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -131,6 +134,17 @@ struct PracticeView: View {
             } catch {
                 print("Audio session error: \(error.localizedDescription)")
             }
+            
+            let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor(named: "AccentPrimary") // Pastikan warnanya gelap agar putih kontras
+                appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+            
+            appearance.shadowColor = .clear
+                appearance.backgroundEffect = nil
+                
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
         }
     }
 }
@@ -174,26 +188,26 @@ struct RecordingRequirementRow: View {
     var image: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: 16) {
             ZStack {
                 Color("AccentSecondary")
-                    .frame(width: 50, height: 50)
+                    .frame(width: 75, height: 75)
                     .cornerRadius(8)
                 Image(image)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 30, height: 30)
+                    .frame(width: 50, height: 50)
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.headline)
+                    .font(.callout)
                     .foregroundColor(.black)
                 Text(description)
-                    .font(.subheadline)
+                    .font(.footnote)
                     .foregroundColor(.gray)
             }
         }
-        .padding(.horizontal)
+//        .padding(.horizontal)
     }
 }
 
@@ -209,4 +223,3 @@ struct PracticeView_Previews: PreviewProvider {
         }
     }
 }
-
