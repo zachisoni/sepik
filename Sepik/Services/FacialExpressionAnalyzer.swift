@@ -7,9 +7,34 @@ class FacialExpressionAnalyzer {
     private let model: VNCoreMLModel
 
     init() throws {
+        // Try multiple approaches to load the SmileDetection model
         let config = MLModelConfiguration()
-        let mlModel = try SmileDetection(configuration: config).model
-        model = try VNCoreMLModel(for: mlModel)
+        
+        // First, try to load from the bundle as a compiled model
+        if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: "mlmodelc") {
+            let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
+            model = try VNCoreMLModel(for: mlModel)
+        }
+        // If that fails, try loading the .mlmodel file directly
+        else if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: "mlmodel") {
+            let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
+            model = try VNCoreMLModel(for: mlModel)
+        }
+        // If both fail, try loading without extension (let the system figure it out)
+        else if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: nil) {
+            let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
+            model = try VNCoreMLModel(for: mlModel)
+        }
+        else {
+            // Last resort: list bundle contents for debugging
+            let bundleContents = Bundle.main.urls(forResourcesWithExtension: nil, subdirectory: nil) ?? []
+            let modelFiles = bundleContents.filter { $0.lastPathComponent.contains("SmileDetection") }
+            print("Available model files in bundle: \(modelFiles)")
+            
+            throw NSError(domain: "FacialExpressionAnalyzer", 
+                         code: -1, 
+                         userInfo: [NSLocalizedDescriptionKey: "SmileDetection model not found in bundle. Available files: \(bundleContents.map { $0.lastPathComponent })"])
+        }
     }
 
     func analyze(videoURL: URL) async throws -> (smileFrames: Int, neutralFrames: Int) {
@@ -40,11 +65,14 @@ class FacialExpressionAnalyzer {
                 let request = VNCoreMLRequest(model: model)
                 try handler.perform([request])
                 if let result = request.results?.first as? VNClassificationObservation {
-                    // Only count as smile if confidence is very high (>= 0.8)
+                    // Updated logic for new model labels: "smile" and "non_smile"
                     switch result.identifier {
-                    case "smile" where result.confidence >= 0.8: smileCount += 1
-                    case "neutral": neutralCount += 1
-                    default: break
+                    case "smile" where result.confidence >= 0.8: 
+                        smileCount += 1
+                    case "non_smile": 
+                        neutralCount += 1
+                    default: 
+                        break
                     }
                 }
             } catch {
