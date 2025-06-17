@@ -138,9 +138,51 @@ struct HistoryView: View {
     }
     
     private func getAssessment(for result: AnalysisResult) -> (String, Color) {
+        // Calculate smile percentage
         let total = result.smileFrames + result.neutralFrames
-        let smilePct = total > 0 ? Double(result.smileFrames) / Double(total) : 0
-        return smilePct >= 0.3 ? ("Confident", Color(red: 0.6, green: 0.8, blue: 0.6)) : ("Needs Improvement", .orange)
+        let smilePercentage = total > 0 ? Double(result.smileFrames) / Double(total) * 100 : 0
+        
+        // Calculate total filler words
+        let totalFillerWords = result.fillerCounts.values.reduce(0, +)
+        
+        // Scoring functions based on new criteria
+        func smileScore() -> Int {
+            if smilePercentage > 30 { return 2 }
+            else if smilePercentage >= 15 { return 1 }
+            else { return 0 }
+        }
+        
+        func fillerWordsScore() -> Int {
+            if totalFillerWords <= 2 { return 2 }
+            else if totalFillerWords <= 4 { return 1 }
+            else { return 0 }
+        }
+        
+        func paceScore() -> Int {
+            let wpm = result.wpm
+            if wpm >= 110 && wpm <= 150 { return 2 }
+            else if (wpm >= 90 && wpm <= 109) || (wpm >= 151 && wpm <= 170) { return 1 }
+            else { return 0 }
+        }
+        
+        func eyeContactScore() -> Int {
+            guard let eyeContact = result.eyeContactScore else { return 0 }
+            if eyeContact >= 60 && eyeContact <= 70 { return 2 }
+            else if (eyeContact >= 40 && eyeContact <= 59) || (eyeContact >= 71 && eyeContact <= 80) { return 1 }
+            else { return 0 }
+        }
+        
+        // Calculate total confidence score
+        let totalScore = smileScore() + fillerWordsScore() + paceScore() + eyeContactScore()
+        
+        // Determine confidence level and color
+        if totalScore >= 7 {
+            return ("Confident", .green)
+        } else if totalScore >= 5 {
+            return ("Neutral", .orange)
+        } else {
+            return ("Nervous", .red)
+        }
     }
     
     private func formatDate(_ date: Date) -> String {

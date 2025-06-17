@@ -33,95 +33,205 @@ struct ResultView: View {
         UINavigationBar.appearance().tintColor = .white
     }
     
-    // Computed properties for analysis
-    private var totalFillerWords: Int {
-        result.fillerCounts.count
-    }
-    
-    private var mostFrequentFillerWord: String {
-        // Get the most frequent filler word regardless of frequency
-        return result.fillerCounts.max(by: { $0.value < $1.value })?.key ?? "uh"
-    }
-    
-    private var fillerWordsDescription: String {
-        if totalFillerWords == 0 {
-            return "Great job! You didn't use any filler words. Keep up the excellent speaking pace."
-        } else {
-            let fillerWordsList = result.fillerCounts.compactMap { (word, count) in
-                count > 0 ? "\(word) (\(count)x)" : nil
-            }.joined(separator: ", ")
-            
-            if totalFillerWords <= 3 {
-                return "You used minimal filler words: \(fillerWordsList). This shows good control!"
-            } else {
-                return "Detected filler words: \(fillerWordsList). Try practicing with short pauses instead of these repetitive words."
-            }
-        }
-    }
+    // MARK: - New Scoring System
     
     private var smilePercentage: Double {
         let total = result.smileFrames + result.neutralFrames
         return total > 0 ? Double(result.smileFrames) / Double(total) * 100 : 0
     }
     
+    private var totalFillerWords: Int {
+        result.fillerCounts.values.reduce(0, +)
+    }
+    
+    // Scoring functions based on new criteria
+    private func smileScore() -> Int {
+        let smilePct = smilePercentage
+        if smilePct > 30 { return 2 }
+        else if smilePct >= 15 { return 1 }
+        else { return 0 }
+    }
+    
+    private func fillerWordsScore() -> Int {
+        if totalFillerWords <= 2 { return 2 }
+        else if totalFillerWords <= 4 { return 1 }
+        else { return 0 }
+    }
+    
+    private func paceScore() -> Int {
+        let wpm = result.wpm
+        if wpm >= 110 && wpm <= 150 { return 2 }
+        else if (wpm >= 90 && wpm <= 109) || (wpm >= 151 && wpm <= 170) { return 1 }
+        else { return 0 }
+    }
+    
+    private func eyeContactScore() -> Int {
+        guard let eyeContact = result.eyeContactScore else { return 0 }
+        if eyeContact >= 60 && eyeContact <= 70 { return 2 }
+        else if (eyeContact >= 40 && eyeContact <= 59) || (eyeContact >= 71 && eyeContact <= 80) { return 1 }
+        else { return 0 }
+    }
+    
+    private var totalConfidenceScore: Int {
+        return smileScore() + fillerWordsScore() + paceScore() + eyeContactScore()
+    }
+    
+    private var confidenceLevel: String {
+        let score = totalConfidenceScore
+        if score >= 7 { return "Confident" }
+        else if score >= 5 { return "Neutral" }
+        else { return "Nervous" }
+    }
+    
+    private var confidenceColor: Color {
+        switch confidenceLevel {
+        case "Confident": return .green
+        case "Neutral": return .orange
+        case "Nervous": return .red
+        default: return .gray
+        }
+    }
+    
+    // MARK: - Updated evaluation methods
+    
     private var expressionQuality: String {
-        let smilePct = smilePercentage / 100.0
-        switch smilePct {
-        case 0.3...: return "Good Expressions"
-        case 0.15..<0.3: return "Flat Expressions"
-        default: return "Bad Expressions"
+        let score = smileScore()
+        switch score {
+        case 2: return "Excellent Expressions"
+        case 1: return "Good Expressions"
+        default: return "Poor Expressions"
         }
     }
     
     private var paceCategory: String {
-        switch result.wpm {
-        case ..<110: return "Slow"
-        case 110...150: return "Targeted"
-        default: return "Fast"
+        let score = paceScore()
+        switch score {
+        case 2: return "Perfect Pace"
+        case 1: return "Acceptable Pace"
+        default: return "Poor Pace"
         }
     }
     
-    private var paceDescription: String {
-        switch result.wpm {
-        case ..<110: return "You're speaking too slowly"
-        case 110...150: return "Your pace is on target"
-        default: return "You're speaking too fast"
+    private var fillerWordsCategory: String {
+        let score = fillerWordsScore()
+        switch score {
+        case 2: return "Excellent Control"
+        case 1: return "Good Control"
+        default: return "Poor Control"
         }
     }
     
     private var eyeContactQuality: String {
-        guard let score = result.eyeContactScore else { return "Eye Contact" }
+        guard result.eyeContactScore != nil else { return "Eye Contact" }
+        let score = eyeContactScore()
         switch score {
-        case 60...70: return "Excellent Eye Contact"
-        case 40..<60, 71...80: return "Moderate Eye Contact"
+        case 2: return "Perfect Eye Contact"
+        case 1: return "Good Eye Contact"
         default: return "Poor Eye Contact"
         }
     }
     
-    private func eyeContactColor() -> Color {
-        guard let score = result.eyeContactScore else { return .purple }
+    // MARK: - Description methods
+    
+    private var expressionDescription: String {
+        let score = smileScore()
         switch score {
-        case 60...70: return .green
-        case 40..<60, 71...80: return .orange
-        default: return .red
+        case 2: return "Excellent! You maintained great facial expressions with frequent smiling."
+        case 1: return "Good expressions, but try to smile more often to appear more engaging."
+        default: return "You need to smile much more to appear engaging and confident."
+        }
+    }
+    
+    private var fillerWordsDescription: String {
+        let score = fillerWordsScore()
+        let fillerWordsList = result.fillerCounts.compactMap { (word, count) in
+            count > 0 ? "\(word) (\(count)x)" : nil
+        }.joined(separator: ", ")
+        
+        switch score {
+        case 2: 
+            return totalFillerWords == 0 ? "Perfect! No filler words detected." : "Excellent control with minimal filler words: \(fillerWordsList)."
+        case 1: 
+            return "Good control, but try to reduce filler words: \(fillerWordsList)."
+        default: 
+            return "Too many filler words detected: \(fillerWordsList). Practice pausing instead of using fillers."
+        }
+    }
+    
+    private var paceDescription: String {
+        let score = paceScore()
+        let wpm = Int(result.wpm)
+        switch score {
+        case 2: return "Perfect speaking pace at \(wpm) words per minute. Keep it up!"
+        case 1: return "Acceptable pace at \(wpm) wpm, but try to aim for 110-150 wpm for optimal clarity."
+        default: 
+            if result.wpm < 90 {
+                return "Speaking too slowly at \(wpm) wpm. Try to speak more confidently and increase your pace."
+            } else {
+                return "Speaking too fast at \(wpm) wpm. Slow down to improve clarity and comprehension."
+            }
         }
     }
     
     private func eyeContactDescription() -> String {
-        guard let score = result.eyeContactScore else { 
+        guard let eyeContactValue = result.eyeContactScore else { 
             return "Eye contact analysis will be available in future updates."
         }
+        let score = eyeContactScore()
         switch score {
-        case 60...70:
+        case 2:
             return "Perfect! You maintained excellent eye contact at the ideal level."
-        case 40..<60:
-            return "Good, but try to maintain more consistent eye contact with your audience."
-        case 71...80:
-            return "Good, but try to vary your gaze occasionally to appear more natural."
-        case 81...:
-            return "You're looking too intensely. Try to blink and look away occasionally for a more natural delivery."
+        case 1:
+            if eyeContactValue < 60 {
+                return "Good, but try to maintain more consistent eye contact with your audience."
+            } else {
+                return "Good, but try to vary your gaze occasionally to appear more natural."
+            }
         default:
-            return "Focus on maintaining more eye contact with your audience to build connection and trust."
+            if eyeContactValue < 40 {
+                return "Focus on maintaining more eye contact with your audience to build connection and trust."
+            } else {
+                return "You're looking too intensely. Try to blink and look away occasionally for a more natural delivery."
+            }
+        }
+    }
+    
+    // MARK: - Color methods
+    
+    private func expressionColor() -> Color {
+        let score = smileScore()
+        switch score {
+        case 2: return .green
+        case 1: return .orange
+        default: return .red
+        }
+    }
+    
+    private func paceColor() -> Color {
+        let score = paceScore()
+        switch score {
+        case 2: return .green
+        case 1: return .orange
+        default: return .red
+        }
+    }
+    
+    private func fillerWordsColor() -> Color {
+        let score = fillerWordsScore()
+        switch score {
+        case 2: return .green
+        case 1: return .orange
+        default: return .red
+        }
+    }
+    
+    private func eyeContactColor() -> Color {
+        guard result.eyeContactScore != nil else { return .purple }
+        let score = eyeContactScore()
+        switch score {
+        case 2: return .green
+        case 1: return .orange
+        default: return .red
         }
     }
 
@@ -158,16 +268,16 @@ struct ResultView: View {
                 }
                 
                 HStack{
-                    Text(expressionQuality == "Good Expressions" ? "Confident" : "Needs Work")
+                    Text(confidenceLevel)
                         .font(.footnote)
                         .frame(minHeight: 30)
                         .fontWeight(.regular)
-                        .foregroundColor(expressionQuality == "Good Expressions" ? .green : .orange)
+                        .foregroundColor(confidenceColor)
                         .padding(.horizontal, 32)
-                        .background((expressionQuality == "Good Expressions" ? Color.green : Color.orange).opacity(0.1))
+                        .background(confidenceColor.opacity(0.1))
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(expressionQuality == "Good Expressions" ? .green : .orange, lineWidth: 2)
+                                .stroke(confidenceColor, lineWidth: 2)
                         )
                         .cornerRadius(5)
                     
@@ -194,14 +304,14 @@ struct ResultView: View {
                                 iconColor: expressionColor(),
                                 title: expressionQuality,
                                 value: String(format: "%.1f%%", smilePercentage),
-                                description: expressionDescription()
+                                description: expressionDescription
                             )
                             
                             // Filler Words Indicator
                             IndicatorCard(
                                 icon: "indicator2",
-                                iconColor: .orange,
-                                title: "Filler Words",
+                                iconColor: fillerWordsColor(),
+                                title: fillerWordsCategory,
                                 value: "\(totalFillerWords) words",
                                 description: fillerWordsDescription
                             )
@@ -280,49 +390,6 @@ struct ResultView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy • h:mm"
         return formatter.string(from: sessionDate ?? Date())
-    }
-    
-    private func paceIcon() -> String {
-        switch result.wpm {
-        case ..<110: return "tortoise"
-        case 110...150: return "checkmark.circle"
-        default: return "hare"
-        }
-    }
-    
-    private func paceColor() -> Color {
-        switch result.wpm {
-        case ..<110: return .blue
-        case 110...150: return .green
-        default: return .red
-        }
-    }
-    
-    private func expressionIcon() -> String {
-        switch expressionQuality {
-        case "Good Expressions": return "face.smiling"
-        case "Flat Expressions": return "face.dashed"
-        default: return "face.dashed"
-        }
-    }
-    
-    private func expressionColor() -> Color {
-        switch expressionQuality {
-        case "Good Expressions": return .green
-        case "Flat Expressions": return .orange
-        default: return .red
-        }
-    }
-    
-    private func expressionDescription() -> String {
-        switch expressionQuality {
-        case "Good Expressions":
-            return "Great job! Keep smiling to engage your audience."
-        case "Flat Expressions":
-            return "Try to smile more often to appear more engaging and confident."
-        default:
-            return "You need to smile much more to appear engaging and confident."
-        }
     }
 }
 
