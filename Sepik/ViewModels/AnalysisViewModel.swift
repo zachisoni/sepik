@@ -44,21 +44,31 @@ class AnalysisViewModel: ObservableObject {
                 throw NSError(domain: "Speech recognition not authorized", code: 1)
             }
 
-            currentStep = "Analyzing video..."
+            currentStep = "Starting analysis..."
+            analysisProgress = 0.15
+            
+            // Run analyses concurrently but track progress better
+            currentStep = "Analyzing facial expressions, speech, and eye contact..."
             analysisProgress = 0.2
             
-            // Keep concurrent execution but simplify progress tracking
+            // Start all analyses concurrently
             async let facial = facialAnalyzer.analyze(videoURL: videoURL)
             async let speech = speechAnalyzer.analyze(videoURL: videoURL)
             async let eyeContact = eyeContactAnalyzer.analyze(videoURL: videoURL)
-
+            
+            // Wait for first one to complete
+            let (smileFrames, neutralFrames) = try await facial
+            currentStep = "Facial analysis complete, continuing with speech and eye contact..."
+            analysisProgress = 0.4
+            
+            // Wait for second one to complete
+            let (totalWords, wpm, fillerCounts) = try await speech
+            currentStep = "Speech analysis complete, finishing eye contact analysis..."
             analysisProgress = 0.7
             
-            let (smileFrames, neutralFrames) = try await facial
-            let (totalWords, wpm, fillerCounts) = try await speech
+            // Wait for the last one
             let eyeContactScore = try await eyeContact
-
-            currentStep = "Finalizing results..."
+            currentStep = "All analysis complete, finalizing results..."
             analysisProgress = 0.9
 
             let urlAsset = AVURLAsset(url: videoURL)

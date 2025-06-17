@@ -50,13 +50,13 @@ struct LoadingView: View {
                             
                             Text(viewModel.currentStep)
                                 .font(.body)
-                                .foregroundColor(.white)
+                                .foregroundColor(.accentPrimary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                             
                             Text("\(Int(viewModel.analysisProgress * 100))%")
                                 .font(.caption)
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(.accentSecondary)
                         }
                     }
                 }
