@@ -16,7 +16,14 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            VStack(spacing: 0) {
+                Color("AccentPrimary")
+                    .frame(height: UIScreen.main.bounds.height * 0.4)
+                Color.white
+            }
+            .ignoresSafeArea()
+            
             ScrollView {
                 LazyVStack(spacing: 12) {
                     ForEach(viewModel.sessions, id: \.id) { session in
@@ -36,6 +43,16 @@ struct HistoryView: View {
                                     expandedSessionID = isExpanded ? session.id : nil
                                 }
                             }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    withAnimation {
+                                        viewModel.deleteSession( session)
+                                    }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            
                         }
                     }
                 }
