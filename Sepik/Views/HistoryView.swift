@@ -141,26 +141,31 @@ struct HistoryView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarTrailing) {
-            if viewModel.isEditing {
-                HStack {
-                    Button("Delete") {
-                        viewModel.deleteSelectedSessions()
-                    }
-                    .foregroundColor(.red)
-                    .disabled(viewModel.selectedSessionIDs.isEmpty)
-                    
-                    Button("Cancel") {
-                        viewModel.isEditing = false
-                        viewModel.selectedSessionIDs.removeAll()
-                    }
-                    .foregroundColor(.white)
-                }
-            } else {
-                Button("Edit") {
-                    viewModel.isEditing = true
+        if viewModel.isEditing {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") {
+                    viewModel.isEditing = false
+                    viewModel.selectedSessionIDs.removeAll()
                 }
                 .foregroundColor(.white)
+            }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Delete") {
+                    viewModel.deleteSelectedSessions()
+                }
+                .foregroundColor(.red)
+                .disabled(viewModel.selectedSessionIDs.isEmpty)
+            }
+        } else {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    viewModel.isEditing = true
+                }) {
+                    Image(systemName: "trash")
+                        .foregroundColor(.white)
+                        .font(.system(size: 16))
+                }
             }
         }
     }
@@ -188,7 +193,7 @@ struct CombinedHistoryView: View {
                             onSelect(!isSelected)
                         }) {
                             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(isSelected ? .blue : .gray)
+                                .foregroundColor(isSelected ? .red : .gray)
                                 .font(.title2)
                         }
                     }
@@ -295,7 +300,7 @@ struct CombinedHistoryView: View {
                         NavigationLink(destination: ResultView(result: sessionData.result, sessionDate: sessionData.session.date, isFromAnalysis: false)) {
                             Text("See details")
                                 .font(.footnote)
-                                .foregroundColor(.gray)
+                                .foregroundColor(Color("AccentPrimary"))
                         }
                     }
                     .padding(.bottom)
