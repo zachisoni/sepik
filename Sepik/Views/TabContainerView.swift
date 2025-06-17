@@ -11,8 +11,12 @@ import PhotosUI
 import AVKit
 
 struct TabContainerView: View {
-    @State private var selectedTab = 0
+    @State private var selectedTab: Int
     @Environment(\.modelContext) private var modelContext
+    
+    init(initialTab: Int = 0) {
+        _selectedTab = State(initialValue: initialTab)
+    }
     
     var body: some View {
         ZStack {
@@ -86,11 +90,6 @@ struct PracticeContentView: View {
                                 .onTapGesture { viewModel.isPickerPresented = true }
                         }
 
-                        Text("Supported format: .MOV (Max size 5 gb)")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .padding(.horizontal)
-
                         NavigationLink {
                             if let url = viewModel.selectedVideo {
                                 LoadingView(videoURL: url)
@@ -115,7 +114,7 @@ struct PracticeContentView: View {
             isPresented: $viewModel.isPickerPresented,
             selection: $viewModel.selectedItem,
             matching: .videos,
-            preferredItemEncoding: .compatible
+            preferredItemEncoding: .current
         )
         .onChange(of: viewModel.selectedItem) { oldItem, newItem in
             viewModel.onSelectedItemChanged(oldValue: oldItem, newValue: newItem)
@@ -150,7 +149,7 @@ struct PracticeContentView: View {
 
 #Preview {
     NavigationStack {
-        TabContainerView()
+        TabContainerView(initialTab: 0)
     }
     .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
 } 

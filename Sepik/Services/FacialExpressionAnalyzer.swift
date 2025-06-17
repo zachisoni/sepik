@@ -35,9 +35,10 @@ class FacialExpressionAnalyzer {
             let request = VNCoreMLRequest(model: model)
             try handler.perform([request])
             if let result = request.results?.first as? VNClassificationObservation {
+                // Only count as smile if confidence is very high (>= 0.8)
                 switch result.identifier {
-                case "smile": smileCount += 1
-                case "non_smile": neutralCount += 1
+                case "smile" where result.confidence >= 0.8: smileCount += 1
+                case "neutral": neutralCount += 1
                 default: break
                 }
             }

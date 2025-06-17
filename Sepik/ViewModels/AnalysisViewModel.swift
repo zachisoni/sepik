@@ -11,6 +11,7 @@ class AnalysisViewModel: ObservableObject {
     private let videoURL: URL
     private let facialAnalyzer: FacialExpressionAnalyzer
     private let speechAnalyzer: SpeechAnalyzer
+    private let eyeContactAnalyzer: EyeContactAnalyzer
     var dataManager: DataManager?
 
     init(videoURL: URL, modelContext: ModelContext? = nil) {
@@ -21,6 +22,7 @@ class AnalysisViewModel: ObservableObject {
             fatalError("Failed to load CoreML model: \(error)")
         }
         speechAnalyzer = SpeechAnalyzer()
+        eyeContactAnalyzer = EyeContactAnalyzer()
         
         if let modelContext = modelContext {
             self.dataManager = DataManager(modelContext: modelContext)
@@ -37,9 +39,11 @@ class AnalysisViewModel: ObservableObject {
 
             async let facial = facialAnalyzer.analyze(videoURL: videoURL)
             async let speech = speechAnalyzer.analyze(videoURL: videoURL)
+            async let eyeContact = eyeContactAnalyzer.analyze(videoURL: videoURL)
 
             let (smileFrames, neutralFrames) = try await facial
             let (totalWords, wpm, fillerCounts) = try await speech
+            let eyeContactScore = try await eyeContact
 
             let urlAsset = AVURLAsset(url: videoURL)
             let durationCM: CMTime = try await urlAsset.load(.duration)
@@ -51,7 +55,9 @@ class AnalysisViewModel: ObservableObject {
                 neutralFrames: neutralFrames,
                 totalWords: totalWords,
                 wpm: wpm,
-                fillerCounts: fillerCounts
+                fillerCounts: fillerCounts,
+                videoURL: videoURL,
+                eyeContactScore: eyeContactScore
             )
             result = analysis
             
