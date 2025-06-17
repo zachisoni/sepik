@@ -306,7 +306,7 @@ struct CombinedHistoryView: View {
                         NavigationLink(destination: ResultView(result: result, sessionDate: session.date, isFromAnalysis: false)) {
                             Text("See details")
                                 .font(.footnote)
-                                .foregroundColor(.gray)
+                                .foregroundColor(.accentPrimary)
                         }
                     }
                     .padding(.bottom)

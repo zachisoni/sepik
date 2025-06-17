@@ -304,6 +304,7 @@ struct ResultView: View {
                                 iconColor: expressionColor(),
                                 title: expressionQuality,
                                 value: String(format: "%.1f%%", smilePercentage),
+                                valueColor: expressionColor(),
                                 description: expressionDescription
                             )
                             
@@ -313,6 +314,7 @@ struct ResultView: View {
                                 iconColor: fillerWordsColor(),
                                 title: fillerWordsCategory,
                                 value: "\(totalFillerWords) words",
+                                valueColor: fillerWordsColor(),
                                 description: fillerWordsDescription
                             )
                             
@@ -322,6 +324,7 @@ struct ResultView: View {
                                 iconColor: paceColor(),
                                 title: paceCategory,
                                 value: "\(Int(result.wpm)) wpm",
+                                valueColor: paceColor(),
                                 description: paceDescription
                             )
                             
@@ -331,6 +334,7 @@ struct ResultView: View {
                                 iconColor: eyeContactColor(),
                                 title: eyeContactQuality,
                                 value: result.eyeContactScore != nil ? String(format: "%.1f%%", result.eyeContactScore!) : "Coming Soon",
+                                valueColor: result.eyeContactScore != nil ? eyeContactColor() : .gray,
                                 description: eyeContactDescription()
                             )
                         }
@@ -398,6 +402,7 @@ struct IndicatorCard: View {
     let iconColor: Color
     let title: String
     let value: String
+    let valueColor: Color
     let description: String
     
     var body: some View {
@@ -427,7 +432,7 @@ struct IndicatorCard: View {
             
             Text(value)
                 .font(.system(size: 14, weight: .medium, design: .default))
-                .foregroundColor(.gray)
+                .foregroundColor(valueColor)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
