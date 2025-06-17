@@ -27,6 +27,7 @@ class EyeContactAnalyzer {
         from videoURL: URL,
         completion: @escaping (Double) -> Void
     ) {
+        // Keep adaptive FPS but use sequential processing
         extractFrames(from: videoURL, fps: 2) { framesWithOrientation in
             guard !framesWithOrientation.isEmpty else {
                 completion(0.0)
@@ -79,21 +80,30 @@ class EyeContactAnalyzer {
 
                 let duration = try await asset.load(.duration)
                 let durationSeconds = CMTimeGetSeconds(duration)
+                
+                // Keep adaptive FPS but more conservative
+                let adaptiveFPS = durationSeconds < 60 ? 1.5 : 1.0
+                
                 let generator = AVAssetImageGenerator(asset: asset)
                 generator.appliesPreferredTrackTransform = true
-                generator.requestedTimeToleranceBefore = .zero
-                generator.requestedTimeToleranceAfter = .zero
+                // Keep tolerances but less aggressive
+                generator.requestedTimeToleranceBefore = CMTime(seconds: 0.1, preferredTimescale: 600)
+                generator.requestedTimeToleranceAfter = CMTime(seconds: 0.1, preferredTimescale: 600)
 
-                let frameCount = Int(durationSeconds * Double(fps))
+                let frameCount = min(Int(durationSeconds * adaptiveFPS), 60) // Reduce max frames
+                
+                // Revert to sequential frame extraction for reliability
                 for i in 0..<frameCount {
-                    let time = CMTime(seconds: Double(i) / Double(fps), preferredTimescale: 600)
+                    let time = CMTime(seconds: Double(i) / adaptiveFPS, preferredTimescale: 600)
                     do {
                         let cgImage = try await generator.image(at: time).image
                         frames.append((image: UIImage(cgImage: cgImage), orientation: videoOrientation))
                     } catch {
                         print("ERROR: Failed to extract frame \(i): \(error.localizedDescription)")
+                        // Continue with next frame
                     }
                 }
+                
                 DispatchQueue.main.async {
                     completion(frames)
                 }

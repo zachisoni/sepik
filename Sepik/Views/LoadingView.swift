@@ -31,12 +31,34 @@ struct LoadingView: View {
                     }
                 
                 if viewModel.isProcessing {
-                    Text("We're processing your rehearsal right away!")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color("AccentPrimary"))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                    VStack(spacing: 16) {
+                        Text("We're processing your rehearsal right away!")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color("AccentPrimary"))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                        
+                        // Progress indicator
+                        VStack(spacing: 8) {
+                            ProgressView(value: viewModel.analysisProgress)
+                                .progressViewStyle(LinearProgressViewStyle(tint: Color("AccentSecondary")))
+                                .frame(height: 8)
+                                .background(Color.white.opacity(0.3))
+                                .cornerRadius(4)
+                                .padding(.horizontal, 40)
+                            
+                            Text(viewModel.currentStep)
+                                .font(.body)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            Text("\(Int(viewModel.analysisProgress * 100))%")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
                 }
                 Spacer()
             }

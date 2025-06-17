@@ -102,8 +102,9 @@ class SpeechAnalyzer {
     private func transcribe(url: URL) async throws -> String {
         try await withCheckedThrowingContinuation { continuation in
             let request = SFSpeechURLRecognitionRequest(url: url)
-            // Set longer timeout for longer videos
+            // Keep basic settings but remove complex timeout logic
             request.shouldReportPartialResults = false
+            request.requiresOnDeviceRecognition = false // Use cloud recognition for better accuracy
             
             let _ = recognizer?.recognitionTask(with: request) { result, error in
                 if let error = error {
