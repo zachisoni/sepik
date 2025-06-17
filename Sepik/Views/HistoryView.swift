@@ -4,7 +4,6 @@ import SwiftData
 struct HistoryView: View {
     @StateObject private var viewModel = HistoryViewModel()
     @Environment(\.modelContext) private var modelContext
-    @State private var expandedSessionID: UUID? = nil
     private let userManager = UserManager.shared
     
     init() {
@@ -18,110 +17,19 @@ struct HistoryView: View {
     
     var body: some View {
         ZStack {
-            Color("AccentPrimary")
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Header
-                VStack(spacing: 16) {
-                    Text("\(userManager.getUserName())'s Speaking\nAnalysis History")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
-                }
-                .padding(.top, 8)
-                .padding(.bottom, 24)
-                
-                // History List
-                if viewModel.sessions.isEmpty {
-                    VStack(spacing: 16) {
-                        Spacer()
-                        Text("No analysis history yet")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                        
-                        Text("Upload a video and start your first analysis!")
-                            .font(.body)
-                            .foregroundColor(.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                        
-                        Button("Refresh") {
-                            viewModel.loadSessions()
-                        }
-                        .foregroundColor(Color("AccentPrimary"))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(Color.white)
-                        .cornerRadius(8)
-                        
-                        Button("Reset Data (Debug)") {
-                            viewModel.clearAndRebuildData()
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(Color.red.opacity(0.6))
-                        .cornerRadius(8)
-                        
-                        Button("Add Test Session") {
-                            viewModel.addTestSession()
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(Color.blue.opacity(0.6))
-                        .cornerRadius(8)
-                        
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal)
-                } else {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(viewModel.sessions, id: \.id) { session in
-                                if let result = session.result {
-                                    let (assessment, color) = getAssessment(for: result)
-                                    let formattedDate = formatDate(session.date)
-                                    
-                                    CombinedHistoryView(
-                                        session: session,
-                                        result: result,
-                                        assessment: assessment,
-                                        color: color,
-                                        formattedDate: formattedDate,
-                                        isExpanded: expandedSessionID == session.id,
-                                        onTap: { isExpanded in
-                                            withAnimation {
-                                                expandedSessionID = isExpanded ? session.id : nil
-                                            }
-                                        },
-                                        onDelete: {
-                                            viewModel.deleteSession(session)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 10)
-                        .padding(.bottom, 100) // Space for tab bar
-                    }
-                }
-                
-                Spacer()
-            }
+            backgroundView
+            contentView
         }
         .navigationTitle("History")
         .navigationBarTitleDisplayMode(.inline)
         .background(Color.gray.opacity(0.1))
+        .tint(.white)
         .onAppear {
             viewModel.configure(with: modelContext)
-            viewModel.loadSessions() // Always reload when view appears
+            print("HistoryView appeared, isEditing: \(viewModel.isEditing)")
         }
+        .toolbar { toolbarContent }
+        .navigationBarBackButtonHidden(viewModel.isEditing)
         .refreshable {
             viewModel.loadSessions()
         }
@@ -130,106 +38,185 @@ struct HistoryView: View {
         }
     }
     
-    private func deleteItems(offsets: IndexSet) {
-        for index in offsets {
-            let session = viewModel.sessions[index]
-            viewModel.deleteSession(session)
+    private var backgroundView: some View {
+        VStack(spacing: 0) {
+            Color("AccentPrimary")
+                .frame(height: UIScreen.main.bounds.height * 0.4)
+            Color.white
+        }
+        .ignoresSafeArea()
+    }
+    
+    private var contentView: some View {
+        VStack(spacing: 0) {
+            // Header
+            VStack(spacing: 16) {
+                Text("\(userManager.getUserName())'s Speaking\nAnalysis History")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+            }
+            .padding(.top, 8)
+            .padding(.bottom, 24)
+            
+            // History List
+            if viewModel.sessions.isEmpty {
+                VStack(spacing: 16) {
+                    Spacer()
+                    Text("No analysis history yet")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                    
+                    Text("Upload a video and start your first analysis!")
+                        .font(.body)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                    
+                    Button("Refresh") {
+                        viewModel.loadSessions()
+                    }
+                    .foregroundColor(Color("AccentPrimary"))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    
+                    Button("Reset Data (Debug)") {
+                        viewModel.clearAndRebuildData()
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
+                    .background(Color.red.opacity(0.6))
+                    .cornerRadius(8)
+                    
+                    Button("Add Test Session") {
+                        viewModel.addTestSession()
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 8)
+                    .background(Color.blue.opacity(0.6))
+                    .cornerRadius(8)
+                    
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(viewModel.sessions, id: \.id) { sessionData in
+                            CombinedHistoryView(
+                                sessionData: sessionData,
+                                isExpanded: viewModel.expandedSessionID == sessionData.id,
+                                isEditing: viewModel.isEditing,
+                                isSelected: viewModel.selectedSessionIDs.contains(sessionData.id),
+                                onTap: { isExpanded in
+                                    withAnimation {
+                                        viewModel.toggleExpansion(sessionData.id, isExpanded: isExpanded)
+                                    }
+                                },
+                                onSelect: { selected in
+                                    viewModel.toggleSelection(sessionData.id, selected: selected)
+                                },
+                                onDelete: {
+                                    viewModel.deleteSession(sessionData.session)
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    .padding(.bottom, 100) // Space for tab bar
+                }
+            }
+            
+            Spacer()
         }
     }
     
-    private func getAssessment(for result: AnalysisResult) -> (String, Color) {
-        // Calculate smile percentage
-        let total = result.smileFrames + result.neutralFrames
-        let smilePercentage = total > 0 ? Double(result.smileFrames) / Double(total) * 100 : 0
-        
-        // Calculate total filler words
-        let totalFillerWords = result.fillerCounts.values.reduce(0, +)
-        
-        // Scoring functions based on new criteria
-        func smileScore() -> Int {
-            if smilePercentage > 30 { return 2 }
-            else if smilePercentage >= 15 { return 1 }
-            else { return 0 }
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            if viewModel.isEditing {
+                HStack {
+                    Button("Delete") {
+                        viewModel.deleteSelectedSessions()
+                    }
+                    .foregroundColor(.red)
+                    .disabled(viewModel.selectedSessionIDs.isEmpty)
+                    
+                    Button("Cancel") {
+                        viewModel.isEditing = false
+                        viewModel.selectedSessionIDs.removeAll()
+                    }
+                    .foregroundColor(.white)
+                }
+            } else {
+                Button("Edit") {
+                    viewModel.isEditing = true
+                }
+                .foregroundColor(.white)
+            }
         }
-        
-        func fillerWordsScore() -> Int {
-            if totalFillerWords <= 2 { return 2 }
-            else if totalFillerWords <= 4 { return 1 }
-            else { return 0 }
-        }
-        
-        func paceScore() -> Int {
-            let wpm = result.wpm
-            if wpm >= 110 && wpm <= 150 { return 2 }
-            else if (wpm >= 90 && wpm <= 109) || (wpm >= 151 && wpm <= 170) { return 1 }
-            else { return 0 }
-        }
-        
-        func eyeContactScore() -> Int {
-            guard let eyeContact = result.eyeContactScore else { return 0 }
-            if eyeContact >= 60 && eyeContact <= 70 { return 2 }
-            else if (eyeContact >= 40 && eyeContact <= 59) || (eyeContact >= 71 && eyeContact <= 80) { return 1 }
-            else { return 0 }
-        }
-        
-        // Calculate total confidence score
-        let totalScore = smileScore() + fillerWordsScore() + paceScore() + eyeContactScore()
-        
-        // Determine confidence level and color
-        if totalScore >= 7 {
-            return ("Confident", .green)
-        } else if totalScore >= 5 {
-            return ("Neutral", .orange)
-        } else {
-            return ("Nervous", .red)
-        }
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MMMM d, yyyy • h:mm"
-        return dateFormatter.string(from: date)
     }
 }
 
 struct CombinedHistoryView: View {
-    let session: PracticeSession
-    let result: AnalysisResult
-    let assessment: String
-    let color: Color
-    let formattedDate: String
+    let sessionData: HistoryViewModel.SessionDisplayData
     let isExpanded: Bool
+    let isEditing: Bool
+    let isSelected: Bool
     let onTap: (Bool) -> Void
+    let onSelect: (Bool) -> Void
     let onDelete: () -> Void
     
     var body: some View {
         VStack(spacing: 0) {
             Button(action: {
-                onTap(!isExpanded)
+                if !isEditing {
+                    onTap(!isExpanded)
+                }
             }) {
                 HStack(spacing: 12) {
-                    Text(assessment)
+                    if isEditing {
+                        Button(action: {
+                            onSelect(!isSelected)
+                        }) {
+                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(isSelected ? .blue : .gray)
+                                .font(.title2)
+                        }
+                    }
+                    
+                    Text(sessionData.assessment)
                         .font(.footnote)
                         .fontWeight(.regular)
-                        .foregroundColor(color)
+                        .foregroundColor(sessionData.color)
                         .padding(.horizontal, 16)
                         .frame(height: 30)
-                        .background(color.opacity(0.1))
+                        .background(sessionData.color.opacity(0.1))
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke(color, lineWidth: 2)
+                                .stroke(sessionData.color, lineWidth: 2)
                         )
                         .cornerRadius(5)
                     
                     Spacer()
                     
-                    Text(formattedDate)
+                    Text(sessionData.formattedDate)
                         .font(.system(size: 16))
                         .foregroundColor(.gray)
                     
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 14))
-                        .foregroundColor(.gray)
+                    if !isEditing {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -238,12 +225,14 @@ struct CombinedHistoryView: View {
             }
             .buttonStyle(PlainButtonStyle())
             .contextMenu {
-                Button(action: onDelete) {
-                    Label("Delete", systemImage: "trash")
+                if !isEditing {
+                    Button(action: onDelete) {
+                        Label("Delete", systemImage: "trash")
+                    }
                 }
             }
             
-            if isExpanded {
+            if isExpanded && !isEditing {
                 VStack(spacing: 8) {
                     Divider()
                         .background(Color.gray.opacity(0.3))
@@ -256,7 +245,7 @@ struct CombinedHistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 24, height: 24)
-                                Text("Smile: \(result.smileFrames)x")
+                                Text("Smile: \(sessionData.result.smileFrames)x")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }
@@ -267,7 +256,7 @@ struct CombinedHistoryView: View {
                                     .scaledToFit()
                                     .frame(width: 24, height: 24)
                                 
-                                Text("Filler Words: \(result.fillerCounts.values.reduce(0, +))")
+                                Text("Filler Words: \(sessionData.result.fillerCounts.values.reduce(0, +))")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }
@@ -281,7 +270,7 @@ struct CombinedHistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 24, height: 24)
-                                Text("Pace: \(Int(result.wpm)) wpm")
+                                Text("Pace: \(Int(sessionData.result.wpm)) wpm")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }
@@ -291,7 +280,7 @@ struct CombinedHistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 20, height: 20)
-                                Text("Eye Contact: \(result.eyeContactScore != nil ? String(format: "%.0f%%", result.eyeContactScore!) : "N/A")")
+                                Text("Eye Contact: \(sessionData.result.eyeContactScore != nil ? String(format: "%.0f%%", sessionData.result.eyeContactScore!) : "N/A")")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }
@@ -303,10 +292,10 @@ struct CombinedHistoryView: View {
                     
                     HStack {
                         Spacer()
-                        NavigationLink(destination: ResultView(result: result, sessionDate: session.date, isFromAnalysis: false)) {
+                        NavigationLink(destination: ResultView(result: sessionData.result, sessionDate: sessionData.session.date, isFromAnalysis: false)) {
                             Text("See details")
                                 .font(.footnote)
-                                .foregroundColor(.accentPrimary)
+                                .foregroundColor(.gray)
                         }
                     }
                     .padding(.bottom)
