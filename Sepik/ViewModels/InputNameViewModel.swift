@@ -15,5 +15,6 @@ class InputNameViewModel: ObservableObject {
     
     func saveUserName() {
         userManager.setUserName(userName)
+        userManager.completeOnboarding()
     }
 } 

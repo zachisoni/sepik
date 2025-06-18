@@ -33,12 +33,24 @@ struct SepikApp: App {
 
     var body: some Scene {
         WindowGroup {
+            ContentView()
+                .accentColor(Color("AccentPrimary"))
+                .tint(Color("AccentPrimary"))
+        }
+        .modelContainer(sharedModelContainer)
+    }
+}
+
+struct ContentView: View {
+    @StateObject private var userManager = UserManager.shared
+    
+    var body: some View {
+        if userManager.hasCompletedOnboarding {
+            TabContainerView(initialTab: 0)
+        } else {
             NavigationStack {
                 OnboardingView()
             }
-            .accentColor(Color("AccentPrimary"))
-            .tint(Color("AccentPrimary"))
         }
-        .modelContainer(sharedModelContainer)
     }
 }

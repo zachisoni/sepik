@@ -14,10 +14,17 @@ class UserManager: ObservableObject {
         }
     }
     
+    @Published var hasCompletedOnboarding: Bool {
+        didSet {
+            UserDefaults.standard.set(hasCompletedOnboarding, forKey: "hasCompletedOnboarding")
+        }
+    }
+    
     static let shared = UserManager()
     
     private init() {
         self.userName = UserDefaults.standard.string(forKey: "userName") ?? ""
+        self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     }
     
     func setUserName(_ name: String) {
@@ -30,5 +37,14 @@ class UserManager: ObservableObject {
     
     func hasUserName() -> Bool {
         return !userName.isEmpty
+    }
+    
+    func completeOnboarding() {
+        hasCompletedOnboarding = true
+    }
+    
+    func resetOnboarding() {
+        hasCompletedOnboarding = false
+        userName = ""
     }
 } 
