@@ -11,71 +11,25 @@ import AVKit
 
 struct PracticeView: View {
     @StateObject private var viewModel = PracticeViewModel()
+    
+    init() {
+        let appearance = UINavigationBarAppearance()
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.backgroundColor = UIColor(named: "AccentPrimary")
+        appearance.shadowColor = nil
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+    }
 
     var body: some View {
         ZStack {
-            Color("AccentColor")
-                .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    Text("Recording Requirements")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    RecordingRequirementRow(
-                        title: "Face exposed in the video",
-                        description: "Make sure your face is clearly visible in the frame.",
-                        image: "rules1"
-                    )
-
-                    RecordingRequirementRow(
-                        title: "No crowded/fare situation",
-                        description: "Avoid recording in crowded or noisy environments.",
-                        image: "rules2"
-                    )
-
-                    RecordingRequirementRow(
-                        title: "Natural/normal lighting",
-                        description: "Ensure good lighting so your expressions are captured correctly.",
-                        image: "rules3"
-                    )
-
-                    VStack(spacing: 16) {
-                        if let videoURL = viewModel.selectedVideo {
-                            VideoPlayer(player: AVPlayer(url: videoURL))
-                                .frame(height: 200)
-                                .cornerRadius(10)
-                                .padding(.horizontal)
-                        } else {
-                            DashedUploadBox()
-                                .padding(.horizontal)
-                                .onTapGesture { viewModel.isPickerPresented = true }
-                        }
-
-                        NavigationLink {
-                            if let url = viewModel.selectedVideo {
-                                LoadingView(videoURL: url)
-                            }
-                        } label: {
-                            Text(viewModel.isLoading ? "Processing..." : "Start Analysis")
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(viewModel.canProceed ? Color("AccentPrimary") : Color("AccentDisabled"))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
-                        .disabled(!viewModel.canProceed)
-                        .padding(.horizontal)
-                    }
-                }
-                .padding(.vertical)
-            }
+            backgroundView
+            contentView
         }
+        .navigationTitle("Analysis")
+        .navigationBarTitleDisplayMode(.inline)
+        .background(Color.gray.opacity(0.1))
+        .tint(.white)
         .photosPicker(
             isPresented: $viewModel.isPickerPresented,
             selection: $viewModel.selectedItem,
@@ -102,7 +56,6 @@ struct PracticeView: View {
         )) { error in
             Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
         }
-        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .onAppear {
             do {
@@ -110,6 +63,98 @@ struct PracticeView: View {
                 try AVAudioSession.sharedInstance().setActive(true)
             } catch {
                 print("Audio session error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private var backgroundView: some View {
+        VStack(spacing: 0) {
+            Color("AccentPrimary")
+                .frame(height: UIScreen.main.bounds.height * 0.4)
+            Color.white
+        }
+        .ignoresSafeArea()
+    }
+    
+    private var contentView: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                // Header
+                VStack(spacing: 16) {
+                    Text("Record, input and analyze\nyour rehearsal video.")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                }
+                .padding(.top, 8)
+                .padding(.bottom, 24)
+                
+                // Recording Requirements Card
+                VStack(alignment: .leading, spacing: 24) {
+                    Text("Recording Requirements")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+
+                    RecordingRequirementRow(
+                        title: "Face exposed in the video",
+                        description: "Make sure your face is clearly visible in the frame.",
+                        image: "rules1"
+                    )
+
+                    RecordingRequirementRow(
+                        title: "No crowded/fare situation",
+                        description: "Avoid recording in crowded or noisy environments.",
+                        image: "rules2"
+                    )
+
+                    RecordingRequirementRow(
+                        title: "Natural/normal lighting",
+                        description: "Ensure good lighting so your expressions are captured correctly.",
+                        image: "rules3"
+                    )
+                }
+                .padding(20)
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                .padding(.horizontal)
+                .padding(.bottom, 24)
+
+                // Video Upload and Analysis Section
+                VStack(spacing: 16) {
+                    if let videoURL = viewModel.selectedVideo {
+                        VideoPlayer(player: AVPlayer(url: videoURL))
+                            .frame(height: 200)
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                    } else {
+                        DashedUploadBox()
+                            .padding(.horizontal)
+                            .onTapGesture { viewModel.isPickerPresented = true }
+                    }
+
+                    NavigationLink {
+                        if let url = viewModel.selectedVideo {
+                            LoadingView(videoURL: url)
+                        }
+                    } label: {
+                        Text(viewModel.isLoading ? "Processing..." : "Start Analysis")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(viewModel.canProceed ? Color("AccentPrimary") : Color("AccentDisabled"))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    .disabled(!viewModel.canProceed)
+                    .padding(.horizontal)
+                }
+                .padding(.bottom, 100) // Space for tab bar
             }
         }
     }
@@ -132,7 +177,7 @@ struct DashedUploadBox: View {
             .background(Color("AccentPrimary"))
             .cornerRadius(8)
 
-            Text("Supported format: .MOV (Max size 5 gb)")
+            Text("Supported format: .MOV (Max duration 5 minutes)")
                 .font(.caption)
                 .foregroundColor(.gray)
         }
@@ -173,7 +218,6 @@ struct RecordingRequirementRow: View {
                     .foregroundColor(.gray)
             }
         }
-        .padding(.horizontal)
     }
 }
 
