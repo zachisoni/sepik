@@ -65,11 +65,11 @@ class FacialExpressionAnalyzer {
                 let request = VNCoreMLRequest(model: model)
                 try handler.perform([request])
                 if let result = request.results?.first as? VNClassificationObservation {
-                    // Updated logic for new model labels: "smile" and "non_smile"
+                    // Updated logic for new model labels: "smile" and "non_smile" with confidence >= 0.7
                     switch result.identifier {
-                    case "smile" where result.confidence >= 0.8: 
+                    case "smile" where result.confidence >= 0.7: 
                         smileCount += 1
-                    case "non_smile": 
+                    case "non_smile" where result.confidence >= 0.7: 
                         neutralCount += 1
                     default: 
                         break
