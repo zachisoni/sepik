@@ -25,13 +25,6 @@ class HistoryViewModel: ObservableObject {
         self.modelContext = modelContext
         self.dataManager = DataManager(modelContext: modelContext)
         loadSessions()
-        
-        // Seed mock data for development if no sessions exist
-        let sessionCountBeforeSeeding = sessions.count
-        dataManager?.seedMockDataIfNeeded()
-        if sessionCountBeforeSeeding == 0 {
-            loadSessions()
-        }
     }
     
     func loadSessions() {

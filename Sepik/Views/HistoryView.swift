@@ -65,54 +65,16 @@ internal struct HistoryView: View {
             
             // History List
             if viewModel.sessions.isEmpty {
-                VStack(spacing: 16) {
+                VStack {
                     Spacer()
-                    Text("No analysis history yet")
+                    Text("No analysis history yet 😚")
                         .font(.title2)
-                        .foregroundColor(.white)
-                    
-                    Text("Upload a video and start your first analysis!")
-                        .font(.body)
-                        .foregroundColor(.white.opacity(0.8))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color("AccentSecondary"))
                         .multilineTextAlignment(.center)
-                    
-                    Button(action: {
-                        viewModel.loadSessions()
-                    }, label: {
-                        Text("Refresh")
-                    })
-                    .foregroundColor(Color("AccentPrimary"))
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(Color.white)
-                    .cornerRadius(8)
-                    
-                    Button(action: {
-                        viewModel.clearAndRebuildData()
-                    }, label: {
-                        Text("Reset Data (Debug)")
-                    })
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(Color.red.opacity(0.6))
-                    .cornerRadius(8)
-                    
-                    Button(action: {
-                        viewModel.addTestSession()
-                    }, label: {
-                        Text("Add Test Session")
-                    })
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(Color.blue.opacity(0.6))
-                    .cornerRadius(8)
-                    
                     Spacer()
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
