@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 
-struct HistoryView: View {
+internal struct HistoryView: View {
     @StateObject private var viewModel = HistoryViewModel()
     @Environment(\.modelContext) private var modelContext
+    @State private var expandedSessionID: UUID?
     private let userManager = UserManager.shared
     
     init() {
@@ -75,27 +76,33 @@ struct HistoryView: View {
                         .foregroundColor(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
                     
-                    Button("Refresh") {
+                    Button(action: {
                         viewModel.loadSessions()
-                    }
+                    }, label: {
+                        Text("Refresh")
+                    })
                     .foregroundColor(Color("AccentPrimary"))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
                     .background(Color.white)
                     .cornerRadius(8)
                     
-                    Button("Reset Data (Debug)") {
+                    Button(action: {
                         viewModel.clearAndRebuildData()
-                    }
+                    }, label: {
+                        Text("Reset Data (Debug)")
+                    })
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
                     .background(Color.red.opacity(0.6))
                     .cornerRadius(8)
                     
-                    Button("Add Test Session") {
+                    Button(action: {
                         viewModel.addTestSession()
-                    }
+                    }, label: {
+                        Text("Add Test Session")
+                    })
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 8)
@@ -143,17 +150,21 @@ struct HistoryView: View {
     private var toolbarContent: some ToolbarContent {
         if viewModel.isEditing {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
+                Button(action: {
                     viewModel.isEditing = false
                     viewModel.selectedSessionIDs.removeAll()
-                }
+                }, label: {
+                    Text("Cancel")
+                })
                 .foregroundColor(.white)
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Delete") {
+                Button(action: {
                     viewModel.deleteSelectedSessions()
-                }
+                }, label: {
+                    Text("Delete")
+                })
                 .foregroundColor(.red)
                 .disabled(viewModel.selectedSessionIDs.isEmpty)
             }
@@ -161,11 +172,11 @@ struct HistoryView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     viewModel.isEditing = true
-                }) {
+                }, label: {
                     Image(systemName: "trash")
                         .foregroundColor(.white)
                         .font(.system(size: 16))
-                }
+                })
             }
         }
     }

@@ -1,12 +1,12 @@
 import SwiftUI
 import SwiftData
 
-struct LoadingView: View {
+internal struct LoadingView: View {
     @StateObject private var viewModel: AnalysisViewModel
     @Environment(\.modelContext) private var modelContext
     @State private var navigate = false
     @State private var animationAmount = 1.0
-    private let videoURL: URL
+    private let videoURL: URL?
 
     init(videoURL: URL) {
         self.videoURL = videoURL
@@ -19,16 +19,12 @@ struct LoadingView: View {
                 .ignoresSafeArea()
             VStack(spacing: 40) {
                 Spacer()
-                Image("microphone")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 150)
-                    .scaleEffect(animationAmount)
-                    .onAppear {
-                        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                            animationAmount = 1.2
-                        }
-                    }
+                
+                // New frame animation from incoming branch
+                FrameAnimationView()
+                    .frame(width: 400)
+                    .offset(x: 20)
+                    .scaleEffect(1.4)
                 
                 if viewModel.isProcessing {
                     VStack(spacing: 16) {
@@ -39,24 +35,31 @@ struct LoadingView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                         
-                        // Progress indicator
-                        VStack(spacing: 8) {
-                            ProgressView(value: viewModel.analysisProgress)
-                                .progressViewStyle(LinearProgressViewStyle(tint: Color("AccentSecondary")))
-                                .frame(height: 8)
-                                .background(Color.white.opacity(0.3))
-                                .cornerRadius(4)
-                                .padding(.horizontal, 40)
+                        // Enhanced progress indicator with both styles
+                        VStack(spacing: 12) {
+                            // Modern Gauge style from incoming branch
+                            Gauge(value: viewModel.analysisProgress) {
+                                Text("Analysis Progress")
+                                    .font(.caption)
+                                    .foregroundColor(.accentPrimary)
+                            }
+                            .gaugeStyle(.linearCapacity)
+                            .tint(Color("AccentSecondary"))
+                            .padding(.horizontal, 32)
                             
-                            Text(viewModel.currentStep)
-                                .font(.body)
-                                .foregroundColor(.accentPrimary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                            
-                            Text("\(Int(viewModel.analysisProgress * 100))%")
-                                .font(.caption)
-                                .foregroundColor(.accentSecondary)
+                            // Detailed progress information from current branch
+                            VStack(spacing: 8) {
+                                Text(viewModel.currentStep)
+                                    .font(.body)
+                                    .foregroundColor(.accentPrimary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                
+                                Text("\(Int(viewModel.analysisProgress * 100))%")
+                                    .font(.caption)
+                                    .foregroundColor(.accentSecondary)
+                                    .fontWeight(.semibold)
+                            }
                         }
                     }
                 }
@@ -91,4 +94,4 @@ struct LoadingView_Previews: PreviewProvider {
         }
         .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
     }
-} 
+}

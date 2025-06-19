@@ -3,7 +3,7 @@ import AVFoundation
 import SwiftData
 
 @MainActor
-class AnalysisViewModel: ObservableObject {
+internal final class AnalysisViewModel: ObservableObject {
     @Published var isProcessing = false
     @Published var result: AnalysisResult?
     @Published var errorMessage: String?
@@ -47,26 +47,44 @@ class AnalysisViewModel: ObservableObject {
             currentStep = "Starting analysis..."
             analysisProgress = 0.15
             
-            // Run analyses concurrently but track progress better
+            // Run analyses concurrently with better progress tracking
             currentStep = "Analyzing facial expressions, speech, and eye contact..."
             analysisProgress = 0.2
             
-            // Start all analyses concurrently
-            async let facial = facialAnalyzer.analyze(videoURL: videoURL)
-            async let speech = speechAnalyzer.analyze(videoURL: videoURL)
-            async let eyeContact = eyeContactAnalyzer.analyze(videoURL: videoURL)
+            // Start all analyses concurrently with progress callbacks
+            async let facial = facialAnalyzer.analyze(videoURL: videoURL) { progress in
+                await MainActor.run {
+                    self.currentStep = "Analyzing facial expressions..."
+                    self.analysisProgress = 0.2 + (progress * 0.2) // 20% of total progress
+                    print("progress face :", self.analysisProgress)
+                }
+            }
+            async let speech = speechAnalyzer.analyze(videoURL: videoURL) {
+                await MainActor.run {
+                    self.currentStep = "Analyzing speech patterns..."
+                    self.analysisProgress += 0.05
+                    print("progress speech:", self.analysisProgress)
+                }
+            }
+            async let eyeContact = eyeContactAnalyzer.analyze(videoURL: videoURL) { progress in
+                await MainActor.run {
+                    self.currentStep = "Analyzing eye contact..."
+                    self.analysisProgress = 0.6 + (progress * 0.2) // Final 20% of analysis
+                    print("progress eye:", self.analysisProgress)
+                }
+            }
             
-            // Wait for first one to complete
+            // Wait for facial analysis to complete
             let (smileFrames, neutralFrames) = try await facial
             currentStep = "Facial analysis complete, continuing with speech and eye contact..."
             analysisProgress = 0.4
             
-            // Wait for second one to complete
+            // Wait for speech analysis to complete
             let (totalWords, wpm, fillerCounts) = try await speech
             currentStep = "Speech analysis complete, finishing eye contact analysis..."
             analysisProgress = 0.7
             
-            // Wait for the last one
+            // Wait for eye contact analysis to complete
             let eyeContactScore = try await eyeContact
             currentStep = "All analysis complete, finalizing results..."
             analysisProgress = 0.9
@@ -74,6 +92,8 @@ class AnalysisViewModel: ObservableObject {
             let urlAsset = AVURLAsset(url: videoURL)
             let durationCM: CMTime = try await urlAsset.load(.duration)
             let duration = durationCM.seconds
+            
+            analysisProgress = 0.95
 
             let analysis = AnalysisResult(
                 duration: duration,
@@ -98,4 +118,4 @@ class AnalysisViewModel: ObservableObject {
         }
         isProcessing = false
     }
-} 
+}
