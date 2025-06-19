@@ -134,7 +134,6 @@ struct ResultView: View {
                 Color.white
             }
             .ignoresSafeArea()
-            
             VStack(spacing: 0) {
                 // Header
                 VStack(spacing: 16) {
@@ -147,7 +146,6 @@ struct ResultView: View {
                         .padding(.bottom, 8)
                 }
                 .padding(.top, 8)
-                
                 // Video Player
                 if let url = videoURL ?? result.videoURL {
                     VideoPlayer(player: AVPlayer(url: url))
@@ -156,8 +154,7 @@ struct ResultView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 16)
                 }
-                
-                HStack{
+                HStack {
                     Text(expressionQuality == "Good Expressions" ? "Confident" : "Needs Work")
                         .font(.footnote)
                         .frame(minHeight: 30)
@@ -214,13 +211,12 @@ struct ResultView: View {
                                 value: "\(Int(result.wpm)) wpm",
                                 description: paceDescription
                             )
-                            
                             // Eye Contact Indicator
                             IndicatorCard(
                                 icon: "indicator4",
                                 iconColor: eyeContactColor(),
                                 title: eyeContactQuality,
-                                value: result.eyeContactScore != nil ? String(format: "%.1f%%", result.eyeContactScore!) : "Coming Soon",
+                                value: result.eyeContactScore != nil ? String(format: "%.1f%%", result.eyeContactScore ?? "0.0%") : "Coming Soon",
                                 description: eyeContactDescription()
                             )
                         }
@@ -228,7 +224,6 @@ struct ResultView: View {
                         .padding(.bottom, 16)
                     }
                 }
-                
                 // Fixed Buttons
                 HStack(spacing: 16) {
                     if isFromAnalysis {

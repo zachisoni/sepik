@@ -13,9 +13,9 @@ class EyeContactAnalyzer {
     
     // MARK: - Public Interface
     
-    func analyze(videoURL: URL) async throws -> Double {
+    func analyze(videoURL: URL, progressHandler: @escaping (Double) async -> Void) async throws -> Double {
         return await withCheckedContinuation { continuation in
-            calculateEyeContactScore(from: videoURL) { score in
+            calculateEyeContactScore(from: videoURL, progressHandler: progressHandler) { score in
                 continuation.resume(returning: score)
             }
         }
@@ -25,13 +25,17 @@ class EyeContactAnalyzer {
     
     private func calculateEyeContactScore(
         from videoURL: URL,
+        progressHandler: @escaping (Double) async -> Void,
         completion: @escaping (Double) -> Void
     ) {
+        // Keep adaptive FPS but use sequential processing
         extractFrames(from: videoURL, fps: 2) { framesWithOrientation in
             guard !framesWithOrientation.isEmpty else {
                 completion(0.0)
                 return
             }
+            
+            let totalFrames = Double(framesWithOrientation.count)
 
             var forwardCount = 0
             var analyzedFrameCount = 0
@@ -44,7 +48,7 @@ class EyeContactAnalyzer {
                 guard let cgImage = uiImage.cgImage else { continue }
 
                 dispatchGroup.enter()
-                self.analyzeFrameForEyeContact(image: cgImage, orientation: orientation) { status in
+                await self.analyzeFrameForEyeContact(image: cgImage, orientation: orientation, totalFrames: totalFrames, progressHandler: progressHandler) { status in
                     if status == .lookingForward { forwardCount += 1 }
                     if status != .faceNotDetected { analyzedFrameCount += 1 }
                     dispatchGroup.leave()
@@ -62,7 +66,7 @@ class EyeContactAnalyzer {
         }
     }
     
-    private func extractFrames(from videoURL: URL, fps: Int, completion: @escaping ([(image: UIImage, orientation: CGImagePropertyOrientation)]) -> Void) {
+    private func extractFrames(from videoURL: URL, fps: Int, completion: @escaping ([(image: UIImage, orientation: CGImagePropertyOrientation)]) async -> Void) {
         Task {
             var frames: [(image: UIImage, orientation: CGImagePropertyOrientation)] = []
             let asset = AVURLAsset(url: videoURL)
@@ -71,7 +75,8 @@ class EyeContactAnalyzer {
                 let tracks = try await asset.loadTracks(withMediaType: .video)
                 guard let track = tracks.first else {
                     print("ERROR: Cannot find video track.")
-                    DispatchQueue.main.async { completion([]) }
+//                    DispatchQueue.main.async { completion([]) }
+                    await completion([])
                     return
                 }
                 let preferredTransform = try await track.load(.preferredTransform)
@@ -79,27 +84,37 @@ class EyeContactAnalyzer {
 
                 let duration = try await asset.load(.duration)
                 let durationSeconds = CMTimeGetSeconds(duration)
+                
+                // Keep adaptive FPS but more conservative
+                let adaptiveFPS = durationSeconds < 60 ? 1.5 : 1.0
+                
                 let generator = AVAssetImageGenerator(asset: asset)
                 generator.appliesPreferredTrackTransform = true
-                generator.requestedTimeToleranceBefore = .zero
-                generator.requestedTimeToleranceAfter = .zero
+                // Keep tolerances but less aggressive
+                generator.requestedTimeToleranceBefore = CMTime(seconds: 0.1, preferredTimescale: 600)
+                generator.requestedTimeToleranceAfter = CMTime(seconds: 0.1, preferredTimescale: 600)
 
-                let frameCount = Int(durationSeconds * Double(fps))
+                let frameCount = min(Int(durationSeconds * adaptiveFPS), 60) // Reduce max frames
+                
+                // Revert to sequential frame extraction for reliability
                 for i in 0..<frameCount {
-                    let time = CMTime(seconds: Double(i) / Double(fps), preferredTimescale: 600)
+                    let time = CMTime(seconds: Double(i) / adaptiveFPS, preferredTimescale: 600)
                     do {
                         let cgImage = try await generator.image(at: time).image
                         frames.append((image: UIImage(cgImage: cgImage), orientation: videoOrientation))
                     } catch {
                         print("ERROR: Failed to extract frame \(i): \(error.localizedDescription)")
+                        // Continue with next frame
                     }
                 }
-                DispatchQueue.main.async {
-                    completion(frames)
-                }
+                await completion(frames)
+//                DispatchQueue.main.async {
+//                    completion(frames)
+//                }
             } catch {
                 print("ERROR: Failed to load video asset properties: \(error)")
-                DispatchQueue.main.async { completion([]) }
+                await completion([])
+//                DispatchQueue.main.async { completion([]) }
             }
         }
     }
@@ -107,8 +122,10 @@ class EyeContactAnalyzer {
     private func analyzeFrameForEyeContact(
         image: CGImage,
         orientation: CGImagePropertyOrientation,
+        totalFrames: Double,
+        progressHandler: @escaping (Double) async -> Void,
         completion: @escaping (EyeContactStatus) -> Void
-    ) {
+    ) async {
         let request = VNDetectFaceLandmarksRequest { request, error in
             if let error = error {
                 print("Vision request failed: \(error)")
@@ -165,6 +182,9 @@ class EyeContactAnalyzer {
         let handler = VNImageRequestHandler(cgImage: image, orientation: orientation, options: [:])
         do {
             try handler.perform([request])
+            // update progress bar
+            print("progress eye in analyzer:", 1 / totalFrames)
+            await progressHandler(Double(1 / totalFrames))
         } catch {
             print("Vision request error: \(error)")
             completion(.faceNotDetected)
@@ -201,4 +221,4 @@ class EyeContactAnalyzer {
             return .up
         }
     }
-} 
+}

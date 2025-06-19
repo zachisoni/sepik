@@ -15,16 +15,22 @@ class SpeechAnalyzer {
     }
 
     /// Transcribe and analyze the speech in the video
-    func analyze(videoURL: URL) async throws -> (totalWords: Int, wpm: Double, fillerCounts: [String: Int]) {
+    func analyze(videoURL: URL, progressHandler: @escaping () async -> Void) async throws -> (totalWords: Int, wpm: Double, fillerCounts: [String: Int]) {
+        await progressHandler()
         let urlAsset = AVURLAsset(url: videoURL)
+        // update porgress in loading screen
         let durationCM: CMTime = try await urlAsset.load(.duration)
         let duration = durationCM.seconds
         let minutes = duration / 60.0
+        await progressHandler()
 
         let transcript = try await transcribe(url: videoURL)
+        await progressHandler()
+        
         let words = transcript.split { $0.isWhitespace || $0.isNewline }
         let total = words.count
 
+        await progressHandler()
         // Count all words and phrases
         var wordCounts: [String: Int] = [:]
         let cleanedWords = words.map { $0.lowercased().trimmingCharacters(in: .punctuationCharacters) }
@@ -76,8 +82,8 @@ class SpeechAnalyzer {
     /// Check if a word is a predefined filler word
     private func isPredefinedFillerWord(_ word: String) -> Bool {
         let predefinedFillers = [
-            "uh", "um", "ah", "er", "eh",
-            "like", "you know", "so", "well", "actually",
+            "uh", "um", "ah", "er", "eh", "em", "hm", "hmm", "mmm",
+            "like", "you know", "so", "well", "actually", "uhh", "umh",
             "basically", "literally", "obviously", "totally",
             "kind of", "sort of", "i mean", "you see",
             "right", "okay", "alright", "anyway"
@@ -102,9 +108,9 @@ class SpeechAnalyzer {
     private func transcribe(url: URL) async throws -> String {
         try await withCheckedThrowingContinuation { continuation in
             let request = SFSpeechURLRecognitionRequest(url: url)
-            // Set longer timeout for longer videos
+            // Keep basic settings but remove complex timeout logic
             request.shouldReportPartialResults = false
-            
+            request.requiresOnDeviceRecognition = false // Use cloud recognition for better accuracy
             let _ = recognizer?.recognitionTask(with: request) { result, error in
                 if let error = error {
                     continuation.resume(throwing: error)
@@ -112,6 +118,7 @@ class SpeechAnalyzer {
                     continuation.resume(returning: result.bestTranscription.formattedString)
                 }
             }
+            print("speech done")
         }
     }
-} 
+}

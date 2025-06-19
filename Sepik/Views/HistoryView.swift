@@ -4,7 +4,7 @@ import SwiftData
 struct HistoryView: View {
     @StateObject private var viewModel = HistoryViewModel()
     @Environment(\.modelContext) private var modelContext
-    @State private var expandedSessionID: UUID? = nil
+    @State private var expandedSessionID: UUID?
     private let userManager = UserManager.shared
     
     init() {
@@ -249,7 +249,7 @@ struct CombinedHistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 20, height: 20)
-                                Text("Eye Contact: \(result.eyeContactScore != nil ? String(format: "%.0f%%", result.eyeContactScore!) : "N/A")")
+                                Text("Eye Contact: \(result.eyeContactScore != nil ? String(format: "%.0f%%", result.eyeContactScore ?? "0,0") : "N/A")")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }

@@ -6,7 +6,7 @@ struct LoadingView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var navigate = false
     @State private var animationAmount = 1.0
-    private let videoURL: URL
+    private let videoURL: URL?
 
     init(videoURL: URL) {
         self.videoURL = videoURL
@@ -19,24 +19,22 @@ struct LoadingView: View {
                 .ignoresSafeArea()
             VStack(spacing: 40) {
                 Spacer()
-                Image("microphone")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 150)
-                    .scaleEffect(animationAmount)
-                    .onAppear {
-                        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                            animationAmount = 1.2
-                        }
-                    }
-                
+                FrameAnimationView()
+                    .frame(width: 400)
+                    .offset(x: 20)
+                    .scaleEffect(1.4)
                 if viewModel.isProcessing {
-                    Text("We're processing your rehearsal right away!")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color("AccentPrimary"))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                    Gauge(value: viewModel.analysisProgress){
+                        Text("We're processing your rehearsal right away!")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color("AccentPrimary"))
+                            .multilineTextAlignment(.center)
+                        
+                    }
+                    .gaugeStyle(.linearCapacity)
+                    .tint(Color("AccentSecondary"))
+                    .padding(.horizontal, 32)
                 }
                 Spacer()
             }
@@ -65,8 +63,8 @@ struct LoadingView: View {
 struct LoadingView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            LoadingView(videoURL: URL(string: "file://dummy.mov")!)
+            LoadingView(videoURL:URL(string: "file://dummy.mov")!)
         }
         .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
     }
-} 
+}
