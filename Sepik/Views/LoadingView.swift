@@ -5,6 +5,7 @@ internal struct LoadingView: View {
     @StateObject private var viewModel: AnalysisViewModel
     @Environment(\.modelContext) private var modelContext
     @State private var navigate = false
+    @State private var navigateToNotFound = false
     @State private var showError = false
     @State private var animationAmount = 1.0
     private let videoURL: URL?
@@ -116,6 +117,10 @@ internal struct LoadingView: View {
                     .navigationBarBackButtonHidden(true)
             }
         }
+        .navigationDestination(isPresented: $navigateToNotFound) {
+            NotFoundView()
+                .navigationBarBackButtonHidden(true)
+        }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             // Configure the view model with model context
@@ -127,6 +132,11 @@ internal struct LoadingView: View {
         .onChange(of: viewModel.result) {
             if viewModel.result != nil {
                 navigate = true
+            }
+        }
+        .onChange(of: viewModel.shouldShowNotFoundView) {
+            if viewModel.shouldShowNotFoundView {
+                navigateToNotFound = true
             }
         }
     }

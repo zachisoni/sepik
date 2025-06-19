@@ -17,11 +17,13 @@ internal final class AnalysisViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var analysisProgress: Double = 0.0
     @Published var currentStep: String = ""
+    @Published var shouldShowNotFoundView = false
 
     private let videoURL: URL
     private let facialAnalyzer: FacialExpressionAnalyzer
     private let speechAnalyzer: SpeechAnalyzer
     private let eyeContactAnalyzer: EyeContactAnalyzer
+    private let faceDetectionService = FaceDetectionService.shared
     var dataManager: DataManager?
 
     init(videoURL: URL, modelContext: ModelContext? = nil) {
@@ -57,6 +59,19 @@ internal final class AnalysisViewModel: ObservableObject {
     }
 
     private func performAnalysis() async throws {
+        // First, validate that the video contains a face
+        currentStep = "Validating video content..."
+        analysisProgress = 0.05
+        
+        let containsFace = try await faceDetectionService.validateVideoContainsFace(url: videoURL)
+        if !containsFace {
+            shouldShowNotFoundView = true
+            currentStep = "No face detected"
+            analysisProgress = 0.0
+            isProcessing = false
+            return
+        }
+        
         currentStep = "Requesting authorization..."
         analysisProgress = 0.1
 
