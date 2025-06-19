@@ -129,10 +129,24 @@ struct PracticeView: View {
                 // Video Upload and Analysis Section
                 VStack(spacing: 16) {
                     if let videoURL = viewModel.selectedVideo {
-                        VideoPlayer(player: AVPlayer(url: videoURL))
-                            .frame(height: 200)
-                            .cornerRadius(10)
-                            .padding(.horizontal)
+                        ZStack(alignment: .topTrailing) {
+                            VideoPlayer(player: AVPlayer(url: videoURL))
+                                .frame(height: 200)
+                                .cornerRadius(10)
+                            
+                            // Delete button overlay
+                            Button(action: {
+                                viewModel.deleteVideo()
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .background(Color.black.opacity(0.6))
+                                    .clipShape(Circle())
+                            }
+                            .padding(8)
+                        }
+                        .padding(.horizontal)
                     } else {
                         DashedUploadBox()
                             .padding(.horizontal)
