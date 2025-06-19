@@ -191,6 +191,11 @@ struct CombinedHistoryView: View {
     let onSelect: (Bool) -> Void
     let onDelete: () -> Void
     
+    private var smilePercentage: Double {
+        let total = sessionData.result.smileFrames + sessionData.result.neutralFrames
+        return total > 0 ? Double(sessionData.result.smileFrames) / Double(total) * 100 : 0
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             Button(action: {
@@ -261,7 +266,7 @@ struct CombinedHistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 24, height: 24)
-                                Text("Smile: \(sessionData.result.smileFrames)x")
+                                Text("Smile: \(smilePercentage, specifier: "%.0f")%")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }

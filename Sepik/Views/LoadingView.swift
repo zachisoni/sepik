@@ -40,9 +40,7 @@ internal struct LoadingView: View {
                         VStack(spacing: 12) {
                             // Modern Gauge style from incoming branch
                             Gauge(value: viewModel.analysisProgress) {
-                                Text("Analysis Progress")
-                                    .font(.caption)
-                                    .foregroundColor(.accentPrimary)
+                                // No text label
                             }
                             .gaugeStyle(.linearCapacity)
                             .tint(Color("AccentSecondary"))
