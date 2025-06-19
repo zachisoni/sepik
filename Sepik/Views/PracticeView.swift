@@ -163,7 +163,7 @@ struct PracticeView: View {
 struct DashedUploadBox: View {
     var body: some View {
         VStack(spacing: 16) {
-            HStack(spacing: 8){
+            HStack(spacing: 8) {
                 Image(systemName: "video")
                     .font(.system(size: 20))
                     .foregroundColor(.white)
@@ -233,4 +233,3 @@ struct PracticeView_Previews: PreviewProvider {
         }
     }
 }
-

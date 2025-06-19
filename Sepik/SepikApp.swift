@@ -13,7 +13,7 @@ struct SepikApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             PracticeSession.self,
-            AnalysisResult.self,
+            AnalysisResult.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

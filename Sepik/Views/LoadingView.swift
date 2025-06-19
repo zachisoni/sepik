@@ -87,7 +87,7 @@ struct LoadingView: View {
 struct LoadingView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            LoadingView(videoURL: URL(string: "file://dummy.mov")!)
+            LoadingView(videoURL: URL(string: "file://dummy.mov") ?? URL(fileURLWithPath: "/tmp/dummy.mov"))
         }
         .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
     }

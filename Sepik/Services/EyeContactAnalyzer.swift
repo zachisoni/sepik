@@ -3,7 +3,7 @@ import AVFoundation
 import Vision
 import UIKit
 
-class EyeContactAnalyzer {
+internal class EyeContactAnalyzer {
     
     enum EyeContactStatus {
         case lookingForward
@@ -93,13 +93,13 @@ class EyeContactAnalyzer {
                 let frameCount = min(Int(durationSeconds * adaptiveFPS), 60) // Reduce max frames
                 
                 // Revert to sequential frame extraction for reliability
-                for i in 0..<frameCount {
-                    let time = CMTime(seconds: Double(i) / adaptiveFPS, preferredTimescale: 600)
+                for frameIndex in 0..<frameCount {
+                    let time = CMTime(seconds: Double(frameIndex) / adaptiveFPS, preferredTimescale: 600)
                     do {
                         let cgImage = try await generator.image(at: time).image
                         frames.append((image: UIImage(cgImage: cgImage), orientation: videoOrientation))
                     } catch {
-                        print("ERROR: Failed to extract frame \(i): \(error.localizedDescription)")
+                        print("ERROR: Failed to extract frame \(frameIndex): \(error.localizedDescription)")
                         // Continue with next frame
                     }
                 }
@@ -186,9 +186,9 @@ class EyeContactAnalyzer {
     private func getCenter(for landmark: VNFaceLandmarkRegion2D) -> CGPoint {
         let points = landmark.normalizedPoints
         guard !points.isEmpty else { return .zero }
-        let x = points.map { $0.x }.reduce(0, +) / CGFloat(points.count)
-        let y = points.map { $0.y }.reduce(0, +) / CGFloat(points.count)
-        return CGPoint(x: x, y: y)
+        let centerX = points.map { $0.x }.reduce(0, +) / CGFloat(points.count)
+        let centerY = points.map { $0.y }.reduce(0, +) / CGFloat(points.count)
+        return CGPoint(x: centerX, y: centerY)
     }
 
     private func getNormalizedWidth(for landmark: VNFaceLandmarkRegion2D) -> CGFloat {

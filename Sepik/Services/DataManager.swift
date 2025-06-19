@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @MainActor
-class DataManager: ObservableObject {
+internal class DataManager: ObservableObject {
     private var modelContext: ModelContext
     
     init(modelContext: ModelContext) {

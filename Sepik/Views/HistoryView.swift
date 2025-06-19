@@ -161,11 +161,11 @@ struct HistoryView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     viewModel.isEditing = true
-                }) {
+                }, label: {
                     Image(systemName: "trash")
                         .foregroundColor(.white)
                         .font(.system(size: 16))
-                }
+                })
             }
         }
     }
@@ -186,16 +186,16 @@ struct CombinedHistoryView: View {
                 if !isEditing {
                     onTap(!isExpanded)
                 }
-            }) {
+            }, label: {
                 HStack(spacing: 12) {
                     if isEditing {
                         Button(action: {
                             onSelect(!isSelected)
-                        }) {
+                        }, label: {
                             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                                 .foregroundColor(isSelected ? .red : .gray)
                                 .font(.title2)
-                        }
+                        })
                     }
                     
                     Text(sessionData.assessment)
@@ -227,7 +227,7 @@ struct CombinedHistoryView: View {
                 .padding(.vertical, 16)
                 .background(Color.white)
                 .cornerRadius(12)
-            }
+            })
             .buttonStyle(PlainButtonStyle())
             .contextMenu {
                 if !isEditing {
@@ -285,7 +285,7 @@ struct CombinedHistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 20, height: 20)
-                                Text("Eye Contact: \(sessionData.result.eyeContactScore != nil ? String(format: "%.0f%%", sessionData.result.eyeContactScore!) : "N/A")")
+                                Text("Eye Contact: \(sessionData.result.eyeContactScore != nil ? String(format: "%.0f%%", sessionData.result.eyeContactScore ?? 0) : "N/A")")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }

@@ -3,7 +3,7 @@ import AVFoundation
 import SwiftData
 
 @MainActor
-class AnalysisViewModel: ObservableObject {
+internal class AnalysisViewModel: ObservableObject {
     @Published var isProcessing = false
     @Published var result: AnalysisResult?
     @Published var errorMessage: String?
@@ -62,7 +62,7 @@ class AnalysisViewModel: ObservableObject {
             analysisProgress = 0.4
             
             // Wait for second one to complete
-            let (totalWords, wpm, fillerCounts) = try await speech
+            let speechResult = try await speech
             currentStep = "Speech analysis complete, finishing eye contact analysis..."
             analysisProgress = 0.7
             
@@ -79,9 +79,9 @@ class AnalysisViewModel: ObservableObject {
                 duration: duration,
                 smileFrames: smileFrames,
                 neutralFrames: neutralFrames,
-                totalWords: totalWords,
-                wpm: wpm,
-                fillerCounts: fillerCounts,
+                totalWords: speechResult.totalWords,
+                wpm: speechResult.wpm,
+                fillerCounts: speechResult.fillerCounts,
                 videoURL: videoURL,
                 eyeContactScore: eyeContactScore
             )

@@ -7,7 +7,7 @@
 
 import Foundation
 
-class UserManager: ObservableObject {
+internal class UserManager: ObservableObject {
     @Published var userName: String {
         didSet {
             UserDefaults.standard.set(userName, forKey: "userName")

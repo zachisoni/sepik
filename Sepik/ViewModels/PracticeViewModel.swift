@@ -10,12 +10,12 @@ import PhotosUI
 import AVFoundation
 
 @MainActor
-class PracticeViewModel: ObservableObject {
-    @Published var selectedVideo: URL? = nil
+internal class PracticeViewModel: ObservableObject {
+    @Published var selectedVideo: URL?
     @Published var isVideoUploaded = false
     @Published var isLoading = false
-    @Published var errorMessage: String? = nil
-    @Published var selectedItem: PhotosPickerItem? = nil
+    @Published var errorMessage: String?
+    @Published var selectedItem: PhotosPickerItem?
     @Published var isPickerPresented = false
 
     var canProceed: Bool {

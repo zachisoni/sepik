@@ -3,9 +3,9 @@ import SwiftUI
 import SwiftData
 
 @MainActor
-class HistoryViewModel: ObservableObject {
+internal class HistoryViewModel: ObservableObject {
     @Published var sessions: [SessionDisplayData] = []
-    @Published var expandedSessionID: UUID? = nil
+    @Published var expandedSessionID: UUID?
     @Published var isEditing: Bool = false
     @Published var selectedSessionIDs: Set<UUID> = []
     
@@ -126,29 +126,27 @@ class HistoryViewModel: ObservableObject {
         
         // Scoring functions based on new criteria
         func smileScore() -> Int {
-            if smilePercentage > 30 { return 2 }
-            else if smilePercentage >= 15 { return 1 }
-            else { return 0 }
+            if smilePercentage > 30 { return 2 } else if smilePercentage >= 15 { return 1 } else { return 0 }
         }
         
         func fillerWordsScore() -> Int {
-            if totalFillerWords <= 2 { return 2 }
-            else if totalFillerWords <= 4 { return 1 }
-            else { return 0 }
+            if totalFillerWords <= 2 { return 2 } else if totalFillerWords <= 4 { return 1 } else { return 0 }
         }
         
         func paceScore() -> Int {
             let wpm = result.wpm
-            if wpm >= 110 && wpm <= 150 { return 2 }
-            else if (wpm >= 90 && wpm <= 109) || (wpm >= 151 && wpm <= 170) { return 1 }
-            else { return 0 }
+            if wpm >= 110 && wpm <= 150 { return 2 } else if (wpm >= 90 && wpm <= 109) || (wpm >= 151 && wpm <= 170) { return 1 } else { return 0 }
         }
         
         func eyeContactScore() -> Int {
             guard let eyeContact = result.eyeContactScore else { return 0 }
-            if eyeContact >= 60 && eyeContact <= 70 { return 2 }
-            else if (eyeContact >= 40 && eyeContact <= 59) || (eyeContact >= 71 && eyeContact <= 80) { return 1 }
-            else { return 0 }
+            if eyeContact >= 60 && eyeContact <= 70 { 
+                return 2 
+            } else if (eyeContact >= 40 && eyeContact <= 59) || (eyeContact >= 71 && eyeContact <= 80) { 
+                return 1 
+            } else { 
+                return 0 
+            }
         }
         
         // Calculate total confidence score

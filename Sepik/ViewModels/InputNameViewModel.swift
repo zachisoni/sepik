@@ -1,6 +1,6 @@
 import Foundation
 
-class InputNameViewModel: ObservableObject {
+internal class InputNameViewModel: ObservableObject {
     @Published var userName: String = ""
     private let userManager = UserManager.shared
     

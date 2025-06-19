@@ -7,7 +7,7 @@ struct OnboardingPage: Identifiable {
     let imageName: String
 }
 
-class OnboardingViewModel: ObservableObject {
+internal class OnboardingViewModel: ObservableObject {
     @Published var currentPage: Int = 0
 
     let pages: [OnboardingPage] = [

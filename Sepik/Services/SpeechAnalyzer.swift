@@ -2,8 +2,14 @@ import Foundation
 import Speech
 import AVFoundation
 
-class SpeechAnalyzer {
+internal class SpeechAnalyzer {
     private let recognizer = SFSpeechRecognizer()
+
+    struct AnalysisResult {
+        let totalWords: Int
+        let wpm: Double
+        let fillerCounts: [String: Int]
+    }
 
     /// Request speech recognition authorization
     func requestAuthorization() async -> Bool {
@@ -15,7 +21,7 @@ class SpeechAnalyzer {
     }
 
     /// Transcribe and analyze the speech in the video
-    func analyze(videoURL: URL) async throws -> (totalWords: Int, wpm: Double, fillerCounts: [String: Int]) {
+    func analyze(videoURL: URL) async throws -> AnalysisResult {
         let urlAsset = AVURLAsset(url: videoURL)
         let durationCM: CMTime = try await urlAsset.load(.duration)
         let duration = durationCM.seconds
@@ -30,11 +36,8 @@ class SpeechAnalyzer {
         let cleanedWords = words.map { $0.lowercased().trimmingCharacters(in: .punctuationCharacters) }
         
         // Count individual words
-        for word in cleanedWords {
-            // Skip very short words (1-2 characters) and common words that aren't fillers
-            if word.count >= 2 && !isCommonWord(word) {
-                wordCounts[word, default: 0] += 1
-            }
+        for word in cleanedWords where word.count >= 2 && !isCommonWord(word) {
+            wordCounts[word, default: 0] += 1
         }
         
         // Count multi-word filler phrases
@@ -53,24 +56,22 @@ class SpeechAnalyzer {
         var fillerCounts: [String: Int] = [:]
         
         // First, check for predefined filler words
-        for (word, count) in wordCounts {
-            if isPredefinedFillerWord(word) {
-                fillerCounts[word] = count
-            }
+        wordCounts.filter { (word, _) in
+            isPredefinedFillerWord(word)
+        }.forEach { (word, count) in
+            fillerCounts[word] = count
         }
         
         // Then, check for dynamic filler words (high frequency)
-        for (word, count) in wordCounts {
+        wordCounts.filter { (word, count) in
             let wordsPerMinute = Double(count) / minutes
-            // Only include words that truly meet the threshold (≥5 per minute)
-            // and have at least 5 total occurrences to avoid false positives in short videos
-            if wordsPerMinute >= 5.0 && count >= 5 && !fillerCounts.keys.contains(word) {
-                fillerCounts[word] = count
-            }
+            return wordsPerMinute >= 5.0 && count >= 5 && !fillerCounts.keys.contains(word)
+        }.forEach { (word, count) in
+            fillerCounts[word] = count
         }
 
         let wpm = Double(total) / minutes
-        return (total, wpm, fillerCounts)
+        return AnalysisResult(totalWords: total, wpm: wpm, fillerCounts: fillerCounts)
     }
     
     /// Check if a word is a predefined filler word
@@ -106,7 +107,7 @@ class SpeechAnalyzer {
             request.shouldReportPartialResults = false
             request.requiresOnDeviceRecognition = false // Use cloud recognition for better accuracy
             
-            let _ = recognizer?.recognitionTask(with: request) { result, error in
+            _ = recognizer?.recognitionTask(with: request) { result, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else if let result = result, result.isFinal {

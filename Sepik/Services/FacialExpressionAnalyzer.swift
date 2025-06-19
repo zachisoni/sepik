@@ -3,7 +3,7 @@ import Vision
 import CoreML
 import AVFoundation
 
-class FacialExpressionAnalyzer {
+internal class FacialExpressionAnalyzer {
     private let model: VNCoreMLModel
 
     init() throws {
@@ -14,18 +14,13 @@ class FacialExpressionAnalyzer {
         if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: "mlmodelc") {
             let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
             model = try VNCoreMLModel(for: mlModel)
-        }
-        // If that fails, try loading the .mlmodel file directly
-        else if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: "mlmodel") {
+        } else if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: "mlmodel") {
             let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
             model = try VNCoreMLModel(for: mlModel)
-        }
-        // If both fail, try loading without extension (let the system figure it out)
-        else if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: nil) {
+        } else if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: nil) {
             let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
             model = try VNCoreMLModel(for: mlModel)
-        }
-        else {
+        } else {
             // Last resort: list bundle contents for debugging
             let bundleContents = Bundle.main.urls(forResourcesWithExtension: nil, subdirectory: nil) ?? []
             let modelFiles = bundleContents.filter { $0.lastPathComponent.contains("SmileDetection") }
@@ -86,7 +81,7 @@ class FacialExpressionAnalyzer {
     
     private func generateCGImage(at time: CMTime, generator: AVAssetImageGenerator) async throws -> CGImage {
         try await withCheckedThrowingContinuation { continuation in
-            generator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { _, image, _, result, error in
+            generator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { _, image, _, _, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else if let image = image {

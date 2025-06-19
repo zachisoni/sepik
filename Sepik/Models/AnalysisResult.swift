@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class AnalysisResult {
+final class AnalysisResult {
     var duration: TimeInterval
     var smileFrames: Int
     var neutralFrames: Int
@@ -36,7 +36,8 @@ class AnalysisResult {
         }
     }
     
-    init(duration: TimeInterval, smileFrames: Int, neutralFrames: Int, totalWords: Int, wpm: Double, fillerCounts: [String: Int], videoURL: URL? = nil, eyeContactScore: Double? = nil) {
+    init(duration: TimeInterval, smileFrames: Int, neutralFrames: Int, totalWords: Int, wpm: Double,
+         fillerCounts: [String: Int], videoURL: URL? = nil, eyeContactScore: Double? = nil) {
         self.duration = duration
         self.smileFrames = smileFrames
         self.neutralFrames = neutralFrames

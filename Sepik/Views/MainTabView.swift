@@ -17,7 +17,7 @@ struct MainTabView: View {
             // Analysis Tab
             Button(action: {
                 selectedTab = 0
-            }) {
+            }, label: {
                 VStack(spacing: 4) {
                     Image(systemName: "doc.fill")
                         .font(.system(size: 24))
@@ -26,14 +26,14 @@ struct MainTabView: View {
                         .font(.caption)
                         .foregroundColor(selectedTab == 0 ? Color("AccentSecondary") : .gray)
                 }
-            }
+            })
             
             Spacer()
             
             // History Tab
             Button(action: {
                 selectedTab = 1
-            }) {
+            }, label: {
                 VStack(spacing: 4) {
                     Image(systemName: "clock.fill")
                         .font(.system(size: 24))
@@ -42,7 +42,7 @@ struct MainTabView: View {
                         .font(.caption)
                         .foregroundColor(selectedTab == 1 ? Color("AccentSecondary") : .gray)
                 }
-            }
+            })
             
             Spacer()
         }
@@ -55,4 +55,3 @@ struct MainTabView: View {
 #Preview {
     MainTabView(selectedTab: .constant(0))
 }
-

@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-class PracticeSession {
+final class PracticeSession {
     var id: UUID
     var date: Date
     var result: AnalysisResult?
@@ -18,4 +18,4 @@ class PracticeSession {
         self.date = date
         self.result = result
     }
-} 
+}
