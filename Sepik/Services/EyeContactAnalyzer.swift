@@ -3,16 +3,16 @@ import AVFoundation
 import Vision
 import UIKit
 
-class EyeContactAnalyzer {
-    
+internal final class EyeContactAnalyzer {
+
     enum EyeContactStatus {
         case lookingForward
         case lookingAway
         case faceNotDetected
     }
-    
+
     // MARK: - Public Interface
-    
+
     func analyze(videoURL: URL) async throws -> Double {
         return await withCheckedContinuation { continuation in
             calculateEyeContactScore(from: videoURL) { score in
@@ -20,9 +20,9 @@ class EyeContactAnalyzer {
             }
         }
     }
-    
+
     // MARK: - Private Implementation
-    
+
     private func calculateEyeContactScore(
         from videoURL: URL,
         completion: @escaping (Double) -> Void
@@ -62,7 +62,7 @@ class EyeContactAnalyzer {
             }
         }
     }
-    
+
     private func extractFrames(from videoURL: URL, fps: Int, completion: @escaping ([(image: UIImage, orientation: CGImagePropertyOrientation)]) -> Void) {
         Task {
             var frames: [(image: UIImage, orientation: CGImagePropertyOrientation)] = []
@@ -80,30 +80,47 @@ class EyeContactAnalyzer {
 
                 let duration = try await asset.load(.duration)
                 let durationSeconds = CMTimeGetSeconds(duration)
-                
-                // Keep adaptive FPS but more conservative
-                let adaptiveFPS = durationSeconds < 60 ? 1.5 : 1.0
-                
+
+                // Much more aggressive FPS reduction for memory efficiency
+                let adaptiveFPS: Double
+                if durationSeconds < 60 {
+                    adaptiveFPS = 1.0 // 1 frame per second for short videos
+                } else if durationSeconds < 180 {
+                    adaptiveFPS = 0.5 // 1 frame every 2 seconds for medium videos
+                } else {
+                    adaptiveFPS = 0.25 // 1 frame every 4 seconds for long videos
+                }
+
                 let generator = AVAssetImageGenerator(asset: asset)
                 generator.appliesPreferredTrackTransform = true
-                // Keep tolerances but less aggressive
-                generator.requestedTimeToleranceBefore = CMTime(seconds: 0.1, preferredTimescale: 600)
-                generator.requestedTimeToleranceAfter = CMTime(seconds: 0.1, preferredTimescale: 600)
+                // More generous tolerances for memory efficiency
+                generator.requestedTimeToleranceBefore = CMTime(seconds: 1.0, preferredTimescale: 600)
+                generator.requestedTimeToleranceAfter = CMTime(seconds: 1.0, preferredTimescale: 600)
 
-                let frameCount = min(Int(durationSeconds * adaptiveFPS), 60) // Reduce max frames
-                
-                // Revert to sequential frame extraction for reliability
-                for i in 0..<frameCount {
-                    let time = CMTime(seconds: Double(i) / adaptiveFPS, preferredTimescale: 600)
+                // Strict limit on frame count to prevent memory issues
+                let maxFrames = min(Int(durationSeconds * adaptiveFPS), 30) // Maximum 30 frames total
+
+                print("Extracting \(maxFrames) frames for eye contact analysis (duration: \(durationSeconds)s)")
+
+                // Process frames sequentially with memory management
+                for frameIndex in 0..<maxFrames {
+                    let time = CMTime(seconds: Double(frameIndex) / adaptiveFPS, preferredTimescale: 600)
                     do {
                         let cgImage = try await generator.image(at: time).image
-                        frames.append((image: UIImage(cgImage: cgImage), orientation: videoOrientation))
+                        autoreleasepool {
+                            frames.append((image: UIImage(cgImage: cgImage), orientation: videoOrientation))
+                        }
                     } catch {
-                        print("ERROR: Failed to extract frame \(i): \(error.localizedDescription)")
+                        print("ERROR: Failed to extract frame \(frameIndex): \(error.localizedDescription)")
                         // Continue with next frame
                     }
+
+                    // Yield control periodically
+                    if frameIndex % 5 == 0 {
+                        await Task.yield()
+                    }
                 }
-                
+
                 DispatchQueue.main.async {
                     completion(frames)
                 }
@@ -113,7 +130,7 @@ class EyeContactAnalyzer {
             }
         }
     }
-    
+
     private func analyzeFrameForEyeContact(
         image: CGImage,
         orientation: CGImagePropertyOrientation,
@@ -180,15 +197,15 @@ class EyeContactAnalyzer {
             completion(.faceNotDetected)
         }
     }
-    
+
     // MARK: - Helper Functions
-    
+
     private func getCenter(for landmark: VNFaceLandmarkRegion2D) -> CGPoint {
         let points = landmark.normalizedPoints
         guard !points.isEmpty else { return .zero }
-        let x = points.map { $0.x }.reduce(0, +) / CGFloat(points.count)
-        let y = points.map { $0.y }.reduce(0, +) / CGFloat(points.count)
-        return CGPoint(x: x, y: y)
+        let centerX = points.map { $0.x }.reduce(0, +) / CGFloat(points.count)
+        let centerY = points.map { $0.y }.reduce(0, +) / CGFloat(points.count)
+        return CGPoint(x: centerX, y: centerY)
     }
 
     private func getNormalizedWidth(for landmark: VNFaceLandmarkRegion2D) -> CGFloat {
@@ -211,4 +228,4 @@ class EyeContactAnalyzer {
             return .up
         }
     }
-} 
+}
