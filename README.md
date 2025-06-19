@@ -207,10 +207,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Apple Developer Documentation for Core ML, Vision, and Speech frameworks
-- SwiftUI and SwiftData community for resources and examples
-- Machine learning community for facial expression recognition techniques
+- Kaggle and Roboflow community for resources and examples
+- [GENKI-4K](https://www.kaggle.com/datasets/talhasar/genki4k) for providing dataset that we used to feed our model
+- Our mentor Kak Meicy and Kak Octa for guiding and giving feedback
 - Beta testers who provided valuable feedback during development
 - Our development team for creating an intuitive and powerful speaking analysis tool
+- ChatGPT, Claude, Gemini, and other LLM for helping in brainstorming/ideation, development, and documentation
 
 ## Contributors
 

@@ -10,6 +10,8 @@ import SwiftData
 
 @main
 struct SepikApp: App {
+    @StateObject private var userManager = UserManager.shared
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             PracticeSession.self,
@@ -34,7 +36,11 @@ struct SepikApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                OnboardingView()
+                if userManager.hasCompletedOnboarding {
+                    TabContainerView(initialTab: 0)
+                } else {
+                    OnboardingView()
+                }
             }
             .accentColor(Color("AccentPrimary"))
             .tint(Color("AccentPrimary"))
