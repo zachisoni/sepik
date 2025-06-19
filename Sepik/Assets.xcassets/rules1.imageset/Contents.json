@@ -1,15 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "rules1.png",
+      "filename" : "face_exposed 1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "face_exposed 2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "face_exposed 3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
