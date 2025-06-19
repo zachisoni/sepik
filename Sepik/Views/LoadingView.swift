@@ -1,12 +1,14 @@
 import SwiftUI
 import SwiftData
 
-struct LoadingView: View {
+internal struct LoadingView: View {
     @StateObject private var viewModel: AnalysisViewModel
     @Environment(\.modelContext) private var modelContext
     @State private var navigate = false
+    @State private var navigateToNotFound = false
+    @State private var showError = false
     @State private var animationAmount = 1.0
-    private let videoURL: URL
+    private let videoURL: URL?
 
     init(videoURL: URL) {
         self.videoURL = videoURL
@@ -19,17 +21,13 @@ struct LoadingView: View {
                 .ignoresSafeArea()
             VStack(spacing: 40) {
                 Spacer()
-                Image("microphone")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 150)
-                    .scaleEffect(animationAmount)
-                    .onAppear {
-                        withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                            animationAmount = 1.2
-                        }
-                    }
-                
+
+                // New frame animation - tied to processing state
+                FrameAnimationView(isActive: viewModel.isProcessing || viewModel.result == nil)
+                    .frame(width: 400)
+                    .offset(x: 20)
+                    .scaleEffect(1.4)
+
                 if viewModel.isProcessing {
                     VStack(spacing: 16) {
                         Text("We're processing your rehearsal right away!")
@@ -38,28 +36,77 @@ struct LoadingView: View {
                             .foregroundColor(Color("AccentPrimary"))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
-                        
-                        // Progress indicator
-                        VStack(spacing: 8) {
-                            ProgressView(value: viewModel.analysisProgress)
-                                .progressViewStyle(LinearProgressViewStyle(tint: Color("AccentSecondary")))
-                                .frame(height: 8)
-                                .background(Color.white.opacity(0.3))
-                                .cornerRadius(4)
-                                .padding(.horizontal, 40)
-                            
-                            Text(viewModel.currentStep)
-                                .font(.body)
-                                .foregroundColor(.accentPrimary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal)
-                            
-                            Text("\(Int(viewModel.analysisProgress * 100))%")
-                                .font(.caption)
-                                .foregroundColor(.accentSecondary)
+
+                        // Enhanced progress indicator with both styles
+                        VStack(spacing: 12) {
+                            // Modern Gauge style from incoming branch
+                            Gauge(value: viewModel.analysisProgress) {
+                                // No text label
+                            }
+                            .gaugeStyle(.linearCapacity)
+                            .tint(Color("AccentSecondary"))
+                            .padding(.horizontal, 32)
+
+                            // Detailed progress information from current branch
+                            VStack(spacing: 8) {
+                                Text(viewModel.currentStep)
+                                    .font(.body)
+                                    .foregroundColor(.accentPrimary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+
+                                Text("\(Int(viewModel.analysisProgress * 100))%")
+                                    .font(.caption)
+                                    .foregroundColor(.accentSecondary)
+                                    .fontWeight(.semibold)
+                            }
                         }
                     }
+                } else if let errorMessage = viewModel.errorMessage {
+                    // Show error state when analysis fails
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 48))
+                            .foregroundColor(.red)
+
+                        Text("Analysis Failed")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color("AccentPrimary"))
+
+                        Text(errorMessage)
+                            .font(.body)
+                            .foregroundColor(Color("AccentPrimary"))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+
+                        Button(action: {
+                            Task {
+                                await retryAnalysis()
+                            }
+                        }, label: {
+                            Text("Retry")
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 12)
+                                .background(Color("AccentPrimary"))
+                                .cornerRadius(8)
+                        })
+                    }
+                } else if !viewModel.isProcessing && viewModel.result == nil && viewModel.errorMessage == nil {
+                    // Show waiting state if not processing but no result or error
+                    VStack(spacing: 16) {
+                        Text("Preparing analysis...")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color("AccentPrimary"))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
                 }
+
                 Spacer()
             }
         }
@@ -70,25 +117,47 @@ struct LoadingView: View {
                     .navigationBarBackButtonHidden(true)
             }
         }
+        .navigationDestination(isPresented: $navigateToNotFound) {
+            NotFoundView()
+                .navigationBarBackButtonHidden(true)
+        }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             // Configure the view model with model context
             viewModel.dataManager = DataManager(modelContext: modelContext)
         }
         .task {
-            await viewModel.analyze()
+            await startAnalysis()
+        }
+        .onChange(of: viewModel.result) {
             if viewModel.result != nil {
                 navigate = true
             }
         }
+        .onChange(of: viewModel.shouldShowNotFoundView) {
+            if viewModel.shouldShowNotFoundView {
+                navigateToNotFound = true
+            }
+        }
+    }
+
+    private func startAnalysis() async {
+        await viewModel.analyze()
+    }
+
+    private func retryAnalysis() async {
+        viewModel.errorMessage = nil
+        viewModel.analysisProgress = 0.0
+        viewModel.currentStep = ""
+        await viewModel.analyze()
     }
 }
 
 struct LoadingView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
-            LoadingView(videoURL: URL(string: "file://dummy.mov")!)
+            LoadingView(videoURL: URL(string: "file://dummy.mov") ?? URL(fileURLWithPath: "/dev/null"))
         }
         .modelContainer(for: [PracticeSession.self, AnalysisResult.self])
     }
-} 
+}

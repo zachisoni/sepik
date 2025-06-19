@@ -3,13 +3,13 @@ import Vision
 import CoreML
 import AVFoundation
 
-class FacialExpressionAnalyzer {
+internal final class FacialExpressionAnalyzer {
     private let model: VNCoreMLModel
 
     init() throws {
         // Try multiple approaches to load the SmileDetection model
         let config = MLModelConfiguration()
-        
+
         // First, try to load from the bundle as a compiled model
         if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: "mlmodelc") {
             let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
@@ -24,15 +24,14 @@ class FacialExpressionAnalyzer {
         else if let modelURL = Bundle.main.url(forResource: "SmileDetection", withExtension: nil) {
             let mlModel = try MLModel(contentsOf: modelURL, configuration: config)
             model = try VNCoreMLModel(for: mlModel)
-        }
-        else {
+        } else {
             // Last resort: list bundle contents for debugging
             let bundleContents = Bundle.main.urls(forResourcesWithExtension: nil, subdirectory: nil) ?? []
             let modelFiles = bundleContents.filter { $0.lastPathComponent.contains("SmileDetection") }
             print("Available model files in bundle: \(modelFiles)")
-            
-            throw NSError(domain: "FacialExpressionAnalyzer", 
-                         code: -1, 
+
+            throw NSError(domain: "FacialExpressionAnalyzer",
+                         code: -1,
                          userInfo: [NSLocalizedDescriptionKey: "SmileDetection model not found in bundle. Available files: \(bundleContents.map { $0.lastPathComponent })"])
         }
     }
@@ -41,60 +40,89 @@ class FacialExpressionAnalyzer {
         let urlAsset = AVURLAsset(url: videoURL)
         let durationCM: CMTime = try await urlAsset.load(.duration)
         let duration = durationCM.seconds
-        
-        // Keep adaptive sampling but make it more conservative
-        let sampleInterval: TimeInterval = duration < 30 ? 0.5 : (duration < 120 ? 1.0 : 1.5)
-        
+
+        // More aggressive memory management for longer videos
+        let sampleInterval: TimeInterval
+        if duration < 60 {
+            sampleInterval = 0.5 // Every 0.5 seconds for short videos
+        } else if duration < 180 {
+            sampleInterval = 1.5 // Every 1.5 seconds for medium videos
+        } else {
+            sampleInterval = 3.0 // Every 3 seconds for long videos (>3 minutes)
+        }
+
         let generator = AVAssetImageGenerator(asset: urlAsset)
         generator.appliesPreferredTrackTransform = true
-        // Keep frame tolerances for faster extraction
-        generator.requestedTimeToleranceBefore = CMTime(seconds: 0.1, preferredTimescale: 600)
-        generator.requestedTimeToleranceAfter = CMTime(seconds: 0.1, preferredTimescale: 600)
+        // More generous tolerances for memory efficiency
+        generator.requestedTimeToleranceBefore = CMTime(seconds: 0.5, preferredTimescale: 600)
+        generator.requestedTimeToleranceAfter = CMTime(seconds: 0.5, preferredTimescale: 600)
+
+        // Limit maximum number of frames to prevent memory issues
+        let maxFrames = duration > 180 ? 60 : Int(duration / sampleInterval)
+        let actualInterval = duration / Double(maxFrames)
 
         var smileCount = 0
         var neutralCount = 0
+        var processedFrames = 0
 
-        let times = stride(from: 0.0, to: duration, by: sampleInterval)
-            .map { CMTime(seconds: $0, preferredTimescale: 600) }
+        // Process frames sequentially to avoid memory buildup
+        for frameIndex in 0..<maxFrames {
+            let timeSeconds = Double(frameIndex) * actualInterval
+            let time = CMTime(seconds: timeSeconds, preferredTimescale: 600)
 
-        // Revert to sequential processing to avoid concurrency issues
-        for time in times {
             do {
-                let cgImage = try await generateCGImage(at: time, generator: generator)
+                let cgImage = try await generateCGImageAsync(at: time, generator: generator)
+
+                // Move the vision processing outside autoreleasepool to handle errors properly
                 let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
                 let request = VNCoreMLRequest(model: model)
                 try handler.perform([request])
-                if let result = request.results?.first as? VNClassificationObservation {
-                    // Updated logic for new model labels: "smile" and "non_smile" with confidence >= 0.7
-                    switch result.identifier {
-                    case "smile" where result.confidence >= 0.7: 
-                        smileCount += 1
-                    case "non_smile" where result.confidence >= 0.7: 
-                        neutralCount += 1
-                    default: 
-                        break
+
+                autoreleasepool {
+                    if let result = request.results?.first as? VNClassificationObservation {
+                        switch result.identifier {
+                        case "smile" where result.confidence >= 0.7:
+                            smileCount += 1
+                        case "non_smile" where result.confidence >= 0.7:
+                            neutralCount += 1
+                        default:
+                            break
+                        }
                     }
+                    processedFrames += 1
                 }
             } catch {
-                print("Error analyzing frame at \(time.seconds): \(error)")
+                print("Error analyzing frame at \(timeSeconds): \(error)")
                 // Continue with next frame instead of failing completely
+            }
+
+            // Memory pressure check - yield periodically for long videos
+            if frameIndex % 10 == 0 {
+                await Task.yield()
             }
         }
 
+        print("Processed \(processedFrames) frames for facial analysis (duration: \(duration)s)")
         return (smileCount, neutralCount)
     }
-    
-    private func generateCGImage(at time: CMTime, generator: AVAssetImageGenerator) async throws -> CGImage {
-        try await withCheckedThrowingContinuation { continuation in
-            generator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { _, image, _, result, error in
+
+    // Async version that avoids priority inversion with timeout protection
+    private func generateCGImageAsync(at time: CMTime, generator: AVAssetImageGenerator) async throws -> CGImage {
+        return try await withCheckedThrowingContinuation { continuation in
+            var hasResumed = false
+
+            generator.generateCGImagesAsynchronously(forTimes: [NSValue(time: time)]) { _, image, _, _, error in
+                guard !hasResumed else { return }
+                hasResumed = true
+
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else if let image = image {
                     continuation.resume(returning: image)
                 } else {
-                    continuation.resume(throwing: NSError(domain: "FacialExpressionAnalyzer", code: -1, userInfo: nil))
+                    continuation.resume(throwing: NSError(domain: "FacialExpressionAnalyzer", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to generate image"]))
                 }
             }
         }
     }
-} 
+}

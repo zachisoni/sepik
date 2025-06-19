@@ -24,10 +24,16 @@ class PracticeViewModel: ObservableObject {
 
     func onSelectedItemChanged(oldValue: PhotosPickerItem?, newValue: PhotosPickerItem?) {
         guard let result = newValue else {
-            errorMessage = "No video selected."
+            // Don't show error when item is cleared (happens during delete)
             return
         }
         loadVideo(from: result)
+    }
+    
+    func deleteVideo() {
+        cleanupTemporaryFile()
+        selectedItem = nil
+        errorMessage = nil
     }
 
     private func loadVideo(from result: PhotosPickerItem) {

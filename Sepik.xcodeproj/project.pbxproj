@@ -16,6 +16,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		C31EF6582E0388070082206A /* loading_motion */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = loading_motion;
+			sourceTree = SOURCE_ROOT;
+		};
 		C3CF40D82DFA5D7F00BCCD01 /* Sepik */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Sepik;
@@ -37,6 +42,7 @@
 		C3CF40CD2DFA5D7F00BCCD01 = {
 			isa = PBXGroup;
 			children = (
+				C31EF6582E0388070082206A /* loading_motion */,
 				C3CF40E52DFA5E1100BCCD01 /* README.md */,
 				C3CF40D82DFA5D7F00BCCD01 /* Sepik */,
 				C3CF40D72DFA5D7F00BCCD01 /* Products */,
@@ -61,12 +67,14 @@
 				C3CF40D22DFA5D7F00BCCD01 /* Sources */,
 				C3CF40D32DFA5D7F00BCCD01 /* Frameworks */,
 				C3CF40D42DFA5D7F00BCCD01 /* Resources */,
+				C31EF1C62E03171E0082206A /* ShellScript */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				C31EF6582E0388070082206A /* loading_motion */,
 				C3CF40D82DFA5D7F00BCCD01 /* Sepik */,
 			);
 			name = Sepik;
@@ -100,6 +108,9 @@
 			);
 			mainGroup = C3CF40CD2DFA5D7F00BCCD01;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C31EF1C52E0317100082206A /* XCRemoteSwiftPackageReference "SwiftLint" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C3CF40D72DFA5D7F00BCCD01 /* Products */;
 			projectDirPath = "";
@@ -120,6 +131,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C31EF1C62E03171E0082206A /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path. \n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C3CF40D22DFA5D7F00BCCD01 /* Sources */ = {
@@ -262,6 +295,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 74859D4FR4;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sepik needs access to your camera to record videos for speech analysis.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sepik needs access to your microphone to analyze your speech patterns and provide feedback on your speaking performance.";
@@ -294,6 +328,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 74859D4FR4;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sepik needs access to your camera to record videos for speech analysis.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Sepik needs access to your microphone to analyze your speech patterns and provide feedback on your speaking performance.";
@@ -339,6 +374,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C31EF1C52E0317100082206A /* XCRemoteSwiftPackageReference "SwiftLint" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/SwiftLint";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.59.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = C3CF40CE2DFA5D7F00BCCD01 /* Project object */;
 }

@@ -20,20 +20,24 @@ struct TabContainerView: View {
     
     var body: some View {
         ZStack {
-            // Content based on selected tab
-            Group {
-                if selectedTab == 0 {
-                    NavigationStack {
-                        PracticeView()
-                            .environment(\.modelContext, modelContext)
-                    }
-                } else {
-                    NavigationStack {
-                        HistoryView()
-                            .environment(\.modelContext, modelContext)
-                    }
+            // Swipeable TabView for content
+            TabView(selection: $selectedTab) {
+                // Practice View (Tab 0)
+                NavigationStack {
+                    PracticeView()
+                        .environment(\.modelContext, modelContext)
                 }
+                .tag(0)
+                
+                // History View (Tab 1)
+                NavigationStack {
+                    HistoryView()
+                        .environment(\.modelContext, modelContext)
+                }
+                .tag(1)
             }
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .ignoresSafeArea(.keyboard, edges: .bottom)
             
             // Tab bar overlay
             VStack {
@@ -44,8 +48,6 @@ struct TabContainerView: View {
         .navigationBarBackButtonHidden(true)
     }
 }
-
-
 
 #Preview {
     NavigationStack {

@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 
-struct HistoryView: View {
+internal struct HistoryView: View {
     @StateObject private var viewModel = HistoryViewModel()
     @Environment(\.modelContext) private var modelContext
+    @State private var expandedSessionID: UUID?
     private let userManager = UserManager.shared
     
     init() {
@@ -64,48 +65,16 @@ struct HistoryView: View {
             
             // History List
             if viewModel.sessions.isEmpty {
-                VStack(spacing: 16) {
+                VStack {
                     Spacer()
-                    Text("No analysis history yet")
+                    Text("No analysis history yet 😚")
                         .font(.title2)
-                        .foregroundColor(.white)
-                    
-                    Text("Upload a video and start your first analysis!")
-                        .font(.body)
-                        .foregroundColor(.white.opacity(0.8))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color("AccentSecondary"))
                         .multilineTextAlignment(.center)
-                    
-                    Button("Refresh") {
-                        viewModel.loadSessions()
-                    }
-                    .foregroundColor(Color("AccentPrimary"))
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(Color.white)
-                    .cornerRadius(8)
-                    
-                    Button("Reset Data (Debug)") {
-                        viewModel.clearAndRebuildData()
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(Color.red.opacity(0.6))
-                    .cornerRadius(8)
-                    
-                    Button("Add Test Session") {
-                        viewModel.addTestSession()
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 8)
-                    .background(Color.blue.opacity(0.6))
-                    .cornerRadius(8)
-                    
                     Spacer()
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
@@ -143,17 +112,21 @@ struct HistoryView: View {
     private var toolbarContent: some ToolbarContent {
         if viewModel.isEditing {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
+                Button(action: {
                     viewModel.isEditing = false
                     viewModel.selectedSessionIDs.removeAll()
-                }
+                }, label: {
+                    Text("Cancel")
+                })
                 .foregroundColor(.white)
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Delete") {
+                Button(action: {
                     viewModel.deleteSelectedSessions()
-                }
+                }, label: {
+                    Text("Delete")
+                })
                 .foregroundColor(.red)
                 .disabled(viewModel.selectedSessionIDs.isEmpty)
             }
@@ -161,11 +134,11 @@ struct HistoryView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: {
                     viewModel.isEditing = true
-                }) {
+                }, label: {
                     Image(systemName: "trash")
                         .foregroundColor(.white)
                         .font(.system(size: 16))
-                }
+                })
             }
         }
     }
@@ -179,6 +152,11 @@ struct CombinedHistoryView: View {
     let onTap: (Bool) -> Void
     let onSelect: (Bool) -> Void
     let onDelete: () -> Void
+    
+    private var smilePercentage: Double {
+        let total = sessionData.result.smileFrames + sessionData.result.neutralFrames
+        return total > 0 ? Double(sessionData.result.smileFrames) / Double(total) * 100 : 0
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -250,7 +228,7 @@ struct CombinedHistoryView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 24, height: 24)
-                                Text("Smile: \(sessionData.result.smileFrames)x")
+                                Text("Smile: \(smilePercentage, specifier: "%.0f")%")
                                     .foregroundColor(Color.black)
                                     .font(.subheadline)
                             }
@@ -312,7 +290,7 @@ struct CombinedHistoryView: View {
         }
         .background(Color.white)
         .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 }
 
