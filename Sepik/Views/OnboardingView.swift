@@ -11,99 +11,92 @@ struct OnboardingView: View {
                 .ignoresSafeArea()
             
             TabView(selection: $viewModel.currentPage) {
-                // Slide 1 & 2: Image slides
+                // Slide 1 & 2: Full-screen transparent images with overlaid content
                 ForEach(viewModel.pages.indices, id: \.self) { index in
                     let page = viewModel.pages[index]
                     
-                    VStack(spacing: 0) {
-                        // Top image section - full width and height extending to status bar
-                        ZStack {
-                            Image(page.imageName)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height * 0.55)
-                                .clipped()
-                        }
-                        .frame(height: UIScreen.main.bounds.height * 0.55)
-                        .ignoresSafeArea(.all, edges: .top)
+                    ZStack {
+                        // Full-screen transparent image overlay
+                        Image(page.imageName)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                            .clipped()
+                            .ignoresSafeArea(.all)
                         
-                        // Content section
-                        VStack(spacing: 24) {
-                        
-                        // Title
-                        Group {
-                            if index == 0 {
-                                Text("Elevate ")
-                                    .foregroundColor(Color("AccentSecondary"))
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                + Text("your public speaking performance")
-                                    .foregroundColor(Color("AccentPrimary"))
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                            } else {
-                                Text("Get feedback on ")
-                                    .foregroundColor(Color("AccentSecondary"))
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                + Text("your facial expressions")
-                                    .foregroundColor(Color("AccentPrimary"))
-                                    .font(.title)
-                                    .fontWeight(.bold)
+                        // Content overlay positioned consistently for slides 1 and 2
+                        VStack(spacing: 32) {
+                            Spacer()
+                            
+                            // Content section aligned for slides 1 and 2
+                            VStack(spacing: 24) {
+                                // Title
+                                Group {
+                                    if index == 0 {
+                                        Text("Elevate ")
+                                            .foregroundColor(Color("AccentSecondary"))
+                                            .font(.title)
+                                            .fontWeight(.bold)
+                                        + Text("your public speaking performance")
+                                            .foregroundColor(Color("AccentPrimary"))
+                                            .font(.title)
+                                            .fontWeight(.bold)
+                                    } else {
+                                        Text("Get feedback on ")
+                                            .foregroundColor(Color("AccentSecondary"))
+                                            .font(.title)
+                                            .fontWeight(.bold)
+                                        + Text("your facial expressions")
+                                            .foregroundColor(Color("AccentPrimary"))
+                                            .font(.title)
+                                            .fontWeight(.bold)
+                                    }
+                                }
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+                                
+                                // Custom page indicators
+                                HStack(spacing: 8) {
+                                    ForEach(0..<3, id: \.self) { dotIndex in
+                                        Circle()
+                                            .fill(dotIndex == index ? Color("AccentSecondary") : Color("AccentSecondary").opacity(0.3))
+                                            .frame(width: 8, height: 8)
+                                    }
+                                }
+                                
+                                // Description
+                                Text(page.description)
+                                    .font(.body)
+                                    .foregroundColor(.black)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 20)
                             }
-                        }
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        
-                        // Custom page indicators
-                        HStack(spacing: 8) {
-                            ForEach(0..<3, id: \.self) { dotIndex in
-                                Circle()
-                                    .fill(dotIndex == index ? Color("AccentSecondary") : Color("AccentSecondary").opacity(0.3))
-                                    .frame(width: 8, height: 8)
-                            }
-                        }
-                        .padding(.top, 8)
-                        
-                        // Description
-                        Text(page.description)
-                            .font(.body)
-                            .foregroundColor(.black)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
                             
                             Spacer()
+                                .frame(height: 80) // Fixed bottom spacing
                         }
-                        .padding(.vertical, 20)
                     }
                     .tag(index)
                 }
                 
-                // Slide 3: Input Name View
+                // Slide 3: Input Name View with full-screen transparent image
                 ZStack {
-                    // Split background extending to status bar
-                    VStack(spacing: 0) {
-                        Color("AccentPrimary")
-                            .frame(height: UIScreen.main.bounds.height * 0.5)
-                        Color("AccentColor")
-                    }
-                    .ignoresSafeArea(.all)
+                    // Full-screen transparent image overlay
+                    Image("onboarding3")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+                        .clipped()
+                        .ignoresSafeArea(.all)
                     
+                    // Content overlay positioned lower on the screen
                     VStack(spacing: 0) {
-                        // Top illustration section
-                        VStack {
-                            Spacer()
-                            Image("person")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(maxHeight: 280)
-                            Spacer()
-                        }
-                        .frame(height: UIScreen.main.bounds.height * 0.5)
-
-                        // Input section - positioned higher
-                        VStack(spacing: 20) {
+                        Spacer()
+                            .frame(minHeight: UIScreen.main.bounds.height * 0.5) // Push content to bottom half
+                        
+                        // Content section positioned lower
+                        VStack(spacing: 14) {
                             // Multi-colored title
                             (Text("What's ")
                                 .foregroundColor(Color("AccentPrimary"))
@@ -119,7 +112,7 @@ struct OnboardingView: View {
                                 .fontWeight(.bold))
                             .fixedSize(horizontal: false, vertical: true)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                            .padding(.horizontal, 20)
                             
                             // Custom page indicators
                             HStack(spacing: 8) {
@@ -150,9 +143,9 @@ struct OnboardingView: View {
                                             .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                                     )
                             }
-                            .padding(.horizontal)
+                            .padding(.horizontal, 20)
 
-                                                        NavigationLink(destination: TabContainerView(initialTab: 0)) {
+                            NavigationLink(destination: TabContainerView(initialTab: 0)) {
                                 Text("Get Started!")
                                 .frame(maxWidth: .infinity)
                                 .padding()
@@ -161,14 +154,14 @@ struct OnboardingView: View {
                                 .cornerRadius(8)
                             }
                             .disabled(!inputNameViewModel.canProceed)
-                            .padding(.horizontal)
+                            .padding(.horizontal, 20)
                             .simultaneousGesture(TapGesture().onEnded {
                                 inputNameViewModel.saveUserName()
                             })
                         }
-                        .padding(.top, 30)
-
+                        
                         Spacer()
+                            .frame(height: 80) // Fixed bottom spacing
                     }
                 }
                 .tag(2)
